@@ -1,0 +1,77 @@
+# Robots.txt pour BUZZ PLUS 225
+# https://buzzplus225.github.io/
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://buzzplus225.github.io/sitemap.xml
+
+# Délai d'exploration général pour les bots compatibles
+Crawl-delay: 2
+
+# Empêcher l'exploration de certains dossiers
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /temp/
+Disallow: /tmp/
+Disallow: /logs/
+
+# Empêcher l'exploration des fichiers inutiles
+Disallow: /*.json$
+
+# --- AUTORISATION DES IA ---
+# OpenAI (ChatGPT) - Respecte le crawl-delay global
+User-agent: GPTBot
+Allow: /
+
+# Common Crawl - Respecte le crawl-delay global
+User-agent: CCBot
+Allow: /
+
+# Anthropic (Claude) - Respecte le crawl-delay global
+User-agent: Anthropic-AI
+Allow: /
+
+# Google Extended (IA Google) - Ignore le crawl-delay
+User-agent: Google-Extended
+Allow: /
+
+# --- MOTEURS DE RECHERCHE TRADITIONNELS ---
+# Googlebot - Ignore le crawl-delay
+User-agent: Googlebot
+Allow: /
+
+# Bingbot - Respecte le crawl-delay global
+User-agent: Bingbot
+Allow: /
+
+# Yahoo - Respecte le crawl-delay global
+User-agent: Slurp
+Allow: /
+
+# Yandex - Respecte le crawl-delay global
+User-agent: Yandex
+Allow: /
+
+# DuckDuckBot - Respecte le crawl-delay global
+User-agent: DuckDuckBot
+Allow: /
+
+# Baidu - Ignore le crawl-delay
+User-agent: Baiduspider
+Allow: /
+
+# --- BOTS DE SCRAPING SEO (TOUJOURS BLOQUÉS) ---
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

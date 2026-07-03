@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BUZZ PLUS 225 - L'info qui buzz</title>
+    <meta name="description" content="Média numérique premium couvrant l'actualité ivoirienne, africaine et internationale." />
+    <meta name="google-site-verification" content="ZhBAzX2KWa7_eI89HUvOSJaWyfIrDM_RPIBRDbPdUkE" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== STYLES EXISTANTS (conservés) ===== */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; line-height:1.6; -webkit-font-smoothing: antialiased; background: #f4f6f9; }
+        .dark body { background: #0a0a14; }
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:#f1f1f1; }
+        ::-webkit-scrollbar-thumb { background:#888; border-radius:3px; }
+        ::-webkit-scrollbar-thumb:hover { background:#555; }
+        .dark ::-webkit-scrollbar-track { background:#1a1a2e; }
+        .dark ::-webkit-scrollbar-thumb { background:#4a4a5a; }
+        .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+        .dark .skeleton { background: linear-gradient(90deg, #1a1a2e 25%, #2a2a3e 50%, #1a1a2e 75%); background-size:200% 100%; }
+        @keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+        .animate-marquee { animation: marquee 25s linear infinite; }
+        @keyframes marquee { 0% { transform:translateX(0%); } 100% { transform:translateX(-50%); } }
+        .page-section { display:none; }
+        .page-section.active { display:block; }
+        .toast-container { position:fixed; bottom:1.5rem; right:1.5rem; z-index:999; display:flex; flex-direction:column; gap:0.5rem; }
+        .toast { padding:0.75rem 1.5rem; border-radius:0.75rem; box-shadow:0 10px 25px rgba(0,0,0,0.15); font-size:0.875rem; font-weight:500; animation:slideUp 0.3s ease-out; display:flex; align-items:center; gap:0.75rem; min-width:240px; }
+        .toast-success { background:#22c55e; color:#fff; }
+        .toast-error { background:#ef4444; color:#fff; }
+        .toast-info { background:#0a1628; color:#fff; }
+        .dark .toast-info { background:#1a2d47; }
+        .toast-close { background:none; border:none; color:inherit; cursor:pointer; opacity:0.7; font-size:1.125rem; margin-left:auto; }
+        .toast-close:hover { opacity:1; }
+        @keyframes slideUp { 0% { opacity:0; transform:translateY(20px); } 100% { opacity:1; transform:translateY(0); } }
+        .reading-progress { position:fixed; top:0; left:0; right:0; z-index:60; height:3px; background:#e5e7eb; }
+        .dark .reading-progress { background:#1f2937; }
+        .reading-progress-bar { height:100%; background:#f5c518; transition:width 0.15s ease; width:0%; }
+        .back-to-top { position:fixed; bottom:1.5rem; left:1.5rem; z-index:50; width:3rem; height:3rem; background:#f5c518; color:#0a1628; border-radius:9999px; border:none; cursor:pointer; box-shadow:0 10px 25px rgba(0,0,0,0.2); display:flex; align-items:center; justify-content:center; transition:opacity 0.3s, transform 0.3s; opacity:0; transform:translateY(20px); pointer-events:none; }
+        .back-to-top.visible { opacity:1; transform:translateY(0); pointer-events:auto; }
+        .back-to-top:hover { background:#d4a017; }
+        .dark .bg-card { background:#1a2d47; }
+        .bg-card { background:#ffffff; }
+        .category-badge { padding:0.125rem 0.625rem; border-radius:9999px; font-size:0.625rem; font-weight:700; color:#fff; }
+        .cat-cote-divoire { background:#e67e22; }
+        .cat-actualite { background:#3498db; }
+        .cat-afrique { background:#2ecc71; }
+        .cat-societe { background:#9b59b6; }
+        .cat-economie { background:#2c3e50; }
+        .cat-faits-divers { background:#e74c3c; }
+        .cat-people { background:#e91e8c; }
+        .cat-football { background:#f39c12; }
+        .cat-default { background:#6b7280; }
+        .category-text-cote-divoire { color:#e67e22; }
+        .category-text-actualite { color:#3498db; }
+        .category-text-afrique { color:#2ecc71; }
+        .category-text-societe { color:#9b59b6; }
+        .category-text-economie { color:#2c3e50; }
+        .category-text-faits-divers { color:#e74c3c; }
+        .category-text-people { color:#e91e8c; }
+        .category-text-football { color:#f39c12; }
+        .category-text-default { color:#6b7280; }
+        .search-dropdown { position:absolute; right:0; top:calc(100% + 8px); width:320px; background:#fff; border-radius:0.75rem; box-shadow:0 20px 60px rgba(0,0,0,0.15); border:1px solid #e5e7eb; overflow:hidden; z-index:50; display:none; }
+        .dark .search-dropdown { background:#1a2d47; border-color:#374151; }
+        .search-dropdown.open { display:block; }
+        .admin-login { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#f4f6f9; }
+        .dark .admin-login { background:#0a0a14; }
+        .article-content p { margin-bottom:1.25rem; line-height:1.8; }
+        .article-content h2 { font-size:1.5rem; font-weight:700; margin-top:2rem; margin-bottom:1rem; }
+        .article-content h3 { font-size:1.25rem; font-weight:600; margin-top:1.5rem; margin-bottom:0.75rem; }
+        .article-content ul, .article-content ol { margin-bottom:1.25rem; padding-left:1.5rem; }
+        .article-content li { margin-bottom:0.5rem; }
+        @media (max-width:640px) { .search-dropdown { width:280px; right:-60px; } }
+
+        /* Spinner pour les chargements */
+        .spinner { display:inline-block; width:1.2rem; height:1.2rem; border:3px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 0.6s linear infinite; }
+        .spinner-dark { border-color:rgba(0,0,0,0.2); border-top-color:#0a1628; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loading-overlay { position:relative; }
+        .loading-overlay .spinner { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+    </style>
+</head>
+<body>
+
+    <!-- ===== PROGRESS BAR ===== -->
+    <div class="reading-progress" id="readingProgress">
+        <div class="reading-progress-bar" id="readingProgressBar"></div>
+    </div>
+
+    <!-- ===== BACK TO TOP ===== -->
+    <button class="back-to-top" id="backToTop" aria-label="Retour en haut">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+    </button>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== APP SHELL ===== -->
+    <div id="app">
+
+        <!-- PAGE HOME -->
+        <div class="page-section active" id="page-home">
+            <!-- HEADER -->
+            <header class="sticky top-0 z-50 bg-white dark:bg-[#0a1628] border-b border-gray-200 dark:border-gray-800 shadow-sm" id="mainHeader">
+                <div class="bg-[#0a1628] text-white text-xs py-1.5">
+                    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+                        <button id="liveBtn" class="flex items-center gap-2 hover:opacity-80 transition-opacity" aria-label="Actualités en direct">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                            </span>
+                            <span class="font-semibold tracking-wide">EN DIRECT</span>
+                        </button>
+                        <span class="hidden sm:inline opacity-80" id="todayDate"></span>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto px-4 py-3">
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- Logo (lien vers l'accueil) -->
+                        <a href="/" id="logoLink" class="flex items-center gap-2 shrink-0" aria-label="Accueil">
+                            <div class="w-10 h-10 bg-[#f5c518] rounded-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0a1628" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+                            </div>
+                            <div class="hidden sm:block">
+                                <h1 class="text-xl font-black tracking-tight text-[#0a1628] dark:text-white leading-none">BUZZ PLUS <span class="text-[#f5c518]">225</span></h1>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 tracking-wide">L'info qui buzz, l'actualité qui connecte</p>
+                            </div>
+                        </a>
+
+                        <!-- Desktop nav -->
+                        <nav class="hidden lg:flex items-center gap-1" id="desktopNav" aria-label="Catégories principales"></nav>
+
+                        <!-- Right actions -->
+                        <div class="flex items-center gap-2">
+                            <div class="relative" id="searchWrapper">
+                                <button id="searchToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Rechercher">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600 dark:text-gray-300"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                </button>
+                                <div class="search-dropdown" id="searchDropdown" role="search">
+                                    <div class="p-3">
+                                        <input type="text" id="searchInput" placeholder="Rechercher un article..." class="w-full px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-[#0a1628] border-0 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white" aria-label="Saisir votre recherche">
+                                    </div>
+                                    <div id="searchResults" class="max-h-72 overflow-y-auto border-t border-gray-100 dark:border-gray-700"></div>
+                                    <div id="searchEmpty" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 hidden">Aucun résultat trouvé</div>
+                                </div>
+                            </div>
+
+                            <button id="darkToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Basculer le mode sombre">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600 dark:text-[#f5c518]" id="darkIcon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                            </button>
+
+                            <button id="mobileMenuToggle" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Ouvrir le menu mobile">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600 dark:text-gray-300" id="mobileMenuIcon"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile menu -->
+                <div class="lg:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a1628] hidden" id="mobileMenu">
+                    <nav class="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 gap-2" id="mobileNav" aria-label="Menu mobile"></nav>
+                </div>
+            </header>
+
+            <!-- BREAKING NEWS BAR -->
+            <div id="breakingBar" class="bg-red-600 text-white py-2 hidden">
+                <div class="max-w-7xl mx-auto px-4 flex items-center gap-3">
+                    <span class="flex items-center gap-1.5 px-2.5 py-0.5 bg-white/20 rounded text-xs font-bold shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                        BREAKING
+                    </span>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex gap-8 animate-marquee whitespace-nowrap" id="breakingTicker"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN -->
+            <main>
+                <!-- HERO -->
+                <section class="max-w-7xl mx-auto px-4 py-6" id="heroSection">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4" id="heroGrid"></div>
+                </section>
+
+                <!-- CATEGORY PILLS -->
+                <section class="max-w-7xl mx-auto px-4 py-4">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide" id="categoryPills"></div>
+                </section>
+
+                <!-- TOOLBAR -->
+                <section class="max-w-7xl mx-auto px-4 py-2">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="14" y2="14"/><path d="M3 4 L7 4 L7 7 L3 7 Z"/><path d="M17 4 L21 4 L21 7 L17 7 Z"/></svg>
+                            <select id="sortSelect" class="bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none cursor-pointer" aria-label="Trier les articles">
+                                <option value="recent">Plus récents</option>
+                                <option value="popular">Plus populaires</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-1 bg-white dark:bg-[#1a2d47] rounded-lg border border-gray-200 dark:border-gray-700 p-0.5">
+                            <button id="viewGrid" class="p-1.5 rounded-md transition-colors bg-gray-100 dark:bg-gray-700 text-[#0a1628] dark:text-white" aria-label="Vue en grille">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+                            </button>
+                            <button id="viewList" class="p-1.5 rounded-md transition-colors text-gray-400" aria-label="Vue en liste">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2" id="articleCount">0 articles trouvés</p>
+                </section>
+
+                <!-- ARTICLES GRID -->
+                <section class="max-w-7xl mx-auto px-4 py-4">
+                    <div class="flex gap-6">
+                        <div class="flex-1 min-w-0">
+                            <div id="articlesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                        </div>
+                        <div class="hidden lg:block w-80 shrink-0" id="sidebar"></div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- FOOTER -->
+            <footer class="bg-[#0a1628] text-white mt-12" id="mainFooter">
+                <div class="max-w-7xl mx-auto px-4 py-12">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <div class="w-10 h-10 bg-[#f5c518] rounded-lg flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0a1628" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>
+                                </div>
+                                <h2 class="text-xl font-black leading-none">BUZZ PLUS <span class="text-[#f5c518]">225</span></h2>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4">L'info qui buzz, l'actualité qui connecte. Média numérique premium couvrant l'actualité ivoirienne, africaine et internationale.</p>
+                            <div class="flex items-center gap-3">
+                                <a href="#" aria-label="Facebook" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#f5c518] hover:text-[#0a1628] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+                                <a href="#" aria-label="Twitter" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#f5c518] hover:text-[#0a1628] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+                                <a href="#" aria-label="LinkedIn" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#f5c518] hover:text-[#0a1628] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+                                <a href="#" aria-label="YouTube" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#f5c518] hover:text-[#0a1628] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.1 24.1 0 0 1 4.5-9.5 3 3 0 0 1 5.2 3 24.1 24.1 0 0 1-4.5 9.5 3 3 0 0 1-5.2-3z"/><path d="M12.5 17a24.1 24.1 0 0 1 4.5-9.5 3 3 0 0 1 5.2 3 24.1 24.1 0 0 1-4.5 9.5 3 3 0 0 1-5.2-3z"/></svg></a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-4">Liens utiles</h3>
+                            <ul class="space-y-2 text-sm text-gray-400">
+                                <li><a href="/" class="hover:text-[#f5c518] transition-colors">Accueil</a></li>
+                                <li><a href="#" class="hover:text-[#f5c518] transition-colors">À propos</a></li>
+                                <li><a href="#" class="hover:text-[#f5c518] transition-colors">Contact</a></li>
+                                <li><a href="#" class="hover:text-[#f5c518] transition-colors">Mentions légales</a></li>
+                                <li><a href="#" class="hover:text-[#f5c518] transition-colors">Politique de confidentialité</a></li>
+                                <li><a href="#" class="hover:text-[#f5c518] transition-colors">Publicité</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-4">Catégories</h3>
+                            <ul class="space-y-2 text-sm text-gray-400" id="footerCategories"></ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold mb-4">Administration</h3>
+                            <p class="text-sm text-gray-400 mb-4">Accédez au panel d'administration pour gérer les articles et les commentaires.</p>
+                            <button id="goToAdmin" class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg text-sm font-medium hover:bg-[#f5c518] hover:text-[#0a1628] transition-colors">
+                                Panel Admin
+                            </button>
+                        </div>
+                    </div>
+                    <div class="border-t border-white/10 mt-10 pt-6 text-center text-sm text-gray-400">
+                        <p>© <span id="footerYear"></span> BUZZ PLUS 225. Tous droits réservés.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- PAGE ARTICLE -->
+        <div class="page-section" id="page-article">
+            <div class="min-h-screen bg-[#f4f6f9] dark:bg-[#0a0a14]">
+                <div id="articleHeader"></div>
+                <main class="max-w-4xl mx-auto px-4 py-6" id="articleContent">
+                    <div id="articleDetail"></div>
+                </main>
+                <div id="articleFooter"></div>
+            </div>
+        </div>
+
+        <!-- PAGE ADMIN -->
+        <div class="page-section" id="page-admin">
+            <div id="adminApp"></div>
+        </div>
+
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- JAVASCRIPT -->
+    <!-- ================================================================ -->
+    <script type="module">
+        // ================================================================
+        // IMPORTS & CONFIG
+        // ================================================================
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'https://dnxogdmnwjeszhsnluhf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_uFIUz7GqohV9HAWZnwZEgA_ikt_YGFv';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const CATEGORIES = ['Tous', 'Côte d\'Ivoire', 'Actualité', 'Afrique', 'Société', 'Économie', 'Faits Divers', 'People', 'Football'];
+        const CAT_COLORS = {
+            'Côte d\'Ivoire': 'cat-cote-divoire',
+            'Actualité': 'cat-actualite',
+            'Afrique': 'cat-afrique',
+            'Société': 'cat-societe',
+            'Économie': 'cat-economie',
+            'Faits Divers': 'cat-faits-divers',
+            'People': 'cat-people',
+            'Football': 'cat-football',
+        };
+        const CAT_TEXT = {
+            'Côte d\'Ivoire': 'category-text-cote-divoire',
+            'Actualité': 'category-text-actualite',
+            'Afrique': 'category-text-afrique',
+            'Société': 'category-text-societe',
+            'Économie': 'category-text-economie',
+            'Faits Divers': 'category-text-faits-divers',
+            'People': 'category-text-people',
+            'Football': 'category-text-football',
+        };
+
+        let state = {
+            articles: [],
+            currentCategory: 'Tous',
+            viewMode: 'grid',
+            sortBy: 'recent',
+            searchQuery: '',
+            isDark: false,
+            isAdmin: false,
+            currentPage: 'home',
+            currentArticleId: null,
+            comments: [],
+            adminUser: null, // Supabase user
+        };
+
+        // ================================================================
+        // TOAST
+        // ================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const id = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+            const div = document.createElement('div');
+            div.className = `toast toast-${type}`;
+            div.dataset.id = id;
+            div.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close" data-id="${id}" aria-label="Fermer la notification">✕</button>
+            `;
+            container.appendChild(div);
+            div.querySelector('.toast-close').addEventListener('click', () => div.remove());
+            setTimeout(() => { if (div.parentNode) div.remove(); }, 4000);
+        }
+
+        // ================================================================
+        // HELPERS
+        // ================================================================
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now.getTime() - d.getTime();
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 60) return `Il y a ${mins} min`;
+            if (hours < 24) return `Il y a ${hours}h`;
+            if (days < 7) return `Il y a ${days} j`;
+            return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        function isNewArticle(dateStr) {
+            return (Date.now() - new Date(dateStr).getTime()) < 86400000;
+        }
+
+        function getCatClass(cat) { return CAT_COLORS[cat] || 'cat-default'; }
+        function getCatTextClass(cat) { return CAT_TEXT[cat] || 'category-text-default'; }
+
+        function getFavorites() { try { return JSON.parse(localStorage.getItem('buzzplus-favorites') || '[]'); } catch { return []; } }
+        function getReadLater() { try { return JSON.parse(localStorage.getItem('buzzplus-readlater') || '[]'); } catch { return []; } }
+        function setFavorites(arr) { localStorage.setItem('buzzplus-favorites', JSON.stringify(arr)); }
+        function setReadLater(arr) { localStorage.setItem('buzzplus-readlater', JSON.stringify(arr)); }
+
+        function generateSlug(title) {
+            return title
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim();
+        }
+
+        // Recherche insensible à la casse et aux accents
+        function normalizeStr(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        }
+
+        function articleMatchesSearch(article, query) {
+            const q = normalizeStr(query);
+            return normalizeStr(article.title).includes(q) ||
+                normalizeStr(article.summary || '').includes(q) ||
+                normalizeStr(article.content || '').includes(q);
+        }
+
+        // ================================================================
+        // SUPABASE HELPERS (avec gestion d'erreur améliorée)
+        // ================================================================
+        async function supabaseQuery(table, opts = {}) {
+            const { select = '*', eqCol, eqVal, ilikeCol, ilikeVal, order = 'created_at', asc = false, limit = 100, single = false, method = 'GET', body = null, patchData = null, deleteId = null } = opts;
+            let url = `${SUPABASE_URL}/rest/v1/${table}`;
+            const params = new URLSearchParams();
+            params.set('select', select);
+            if (order) params.set('order', `${order}.${asc ? 'asc' : 'desc'}`);
+            if (limit) params.set('limit', String(limit));
+            if (eqCol && eqVal !== undefined) params.set(eqCol, `eq.${eqVal}`);
+            if (ilikeCol && ilikeVal) params.set(ilikeCol, `ilike.%${ilikeVal}%`);
+            if (single) params.set('limit', '1');
+            const qs = params.toString();
+            if (qs) url += '?' + qs;
+
+            const headers = {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+            };
+            const fetchOpts = { method, headers };
+            if (body) fetchOpts.body = JSON.stringify(body);
+            if (patchData) { fetchOpts.method = 'PATCH'; fetchOpts.body = JSON.stringify(patchData); }
+            if (deleteId) {
+                const delUrl = `${SUPABASE_URL}/rest/v1/${table}?id=eq.${deleteId}`;
+                const resp = await fetch(delUrl, { method: 'DELETE', headers });
+                if (!resp.ok) throw new Error(await resp.text());
+                return { data: null, error: null };
+            }
+
+            try {
+                const resp = await fetch(url, fetchOpts);
+                if (!resp.ok) {
+                    const errText = await resp.text();
+                    throw new Error(`HTTP ${resp.status}: ${errText}`);
+                }
+                const data = await resp.json();
+                return { data: single ? data[0] || null : data, error: null };
+            } catch (err) {
+                return { data: null, error: err.message };
+            }
+        }
+
+        async function supabaseInsert(table, data) {
+            try {
+                const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation',
+                    },
+                    body: JSON.stringify(data),
+                });
+                if (!resp.ok) throw new Error(await resp.text());
+                const json = await resp.json();
+                return { data: json[0] || null, error: null };
+            } catch (err) {
+                return { data: null, error: err.message };
+            }
+        }
+
+        // ================================================================
+        // FETCH ARTICLES / COMMENTS
+        // ================================================================
+        async function fetchArticles(category, limit = 50) {
+            const opts = { select: '*', order: 'published_at', asc: false, limit };
+            if (category && category !== 'Tous') { opts.eqCol = 'category'; opts.eqVal = category; }
+            const result = await supabaseQuery('articles', opts);
+            if (result.error) { showToast('Erreur de chargement: ' + result.error, 'error'); return []; }
+            return result.data || [];
+        }
+
+        async function fetchArticleBySlug(slug) {
+            const result = await supabaseQuery('articles', { select: '*', eqCol: 'slug', eqVal: slug, single: true });
+            return result.error ? null : result.data;
+        }
+
+        async function fetchComments(articleId) {
+            const result = await supabaseQuery('comments', { select: '*', eqCol: 'article_id', eqVal: articleId, order: 'created_at', asc: false, limit: 100 });
+            return result.error ? [] : result.data || [];
+        }
+
+        async function postComment(articleId, authorName, content) {
+            return supabaseInsert('comments', { article_id: articleId, author_name: authorName.trim(), content: content.trim() });
+        }
+
+        async function subscribeNewsletter(email) {
+            return supabaseInsert('newsletter_subscribers', { email });
+        }
+
+        // ================================================================
+        // ADMIN AUTH (avec Supabase Auth)
+        // ================================================================
+        async function checkAdminSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) return null;
+            // Vérifier que l'utilisateur a le rôle admin (ex: dans la table profiles)
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+            if (profileError || !profile || profile.role !== 'admin') return null;
+            return session.user;
+        }
+
+        async function signInAdmin(email, password) {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw new Error(error.message);
+            // Vérifier le rôle admin
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', data.user.id)
+                .single();
+            if (profileError || !profile || profile.role !== 'admin') {
+                await supabase.auth.signOut();
+                throw new Error('Vous n\'êtes pas autorisé à accéder à l\'administration.');
+            }
+            return data.user;
+        }
+
+        async function signOutAdmin() {
+            await supabase.auth.signOut();
+        }
+
+        // ================================================================
+        // RENDER FUNCTIONS (avec optimisations)
+        // ================================================================
+
+        // Header
+        function renderHeader(containerId, currentCat) {
+            const container = document.getElementById(containerId) || document.querySelector('#mainHeader');
+            if (!container) return;
+            // Desktop nav
+            const nav = document.getElementById('desktopNav');
+            if (nav) {
+                // Ne reconstruire que si nécessaire (on compare avec une data-attribute)
+                if (nav.dataset.currentCat !== currentCat) {
+                    nav.dataset.currentCat = currentCat;
+                    nav.innerHTML = CATEGORIES.slice(0, 7).map(cat =>
+                        `<button class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${currentCat === cat ? 'bg-[#0a1628] text-white dark:bg-white dark:text-[#0a1628]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}" data-cat="${cat}">${cat}</button>`
+                    ).join('');
+                    nav.querySelectorAll('button').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const cat = btn.dataset.cat;
+                            state.currentCategory = cat;
+                            renderHeader('mainHeader', cat);
+                            renderCategoryPills(cat);
+                            renderArticles();
+                            navigate('home');
+                        });
+                    });
+                }
+            }
+            // Mobile nav
+            const mobileNav = document.getElementById('mobileNav');
+            if (mobileNav && mobileNav.dataset.currentCat !== currentCat) {
+                mobileNav.dataset.currentCat = currentCat;
+                mobileNav.innerHTML = CATEGORIES.map(cat =>
+                    `<button class="px-4 py-2.5 rounded-lg text-sm font-medium text-left transition-colors ${currentCat === cat ? 'bg-[#0a1628] text-white dark:bg-white dark:text-[#0a1628]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}" data-cat="${cat}">${cat}</button>`
+                ).join('');
+                mobileNav.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const cat = btn.dataset.cat;
+                        state.currentCategory = cat;
+                        renderHeader('mainHeader', cat);
+                        renderCategoryPills(cat);
+                        renderArticles();
+                        navigate('home');
+                        document.getElementById('mobileMenu').classList.add('hidden');
+                    });
+                });
+            }
+
+            // Logo
+            const logoLink = document.getElementById('logoLink');
+            if (logoLink) {
+                logoLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    state.currentCategory = 'Tous';
+                    renderHeader('mainHeader', 'Tous');
+                    renderCategoryPills('Tous');
+                    renderArticles();
+                    navigate('home');
+                });
+            }
+
+            const liveBtn = document.getElementById('liveBtn');
+            if (liveBtn) {
+                liveBtn.addEventListener('click', () => {
+                    state.currentCategory = 'Tous';
+                    renderHeader('mainHeader', 'Tous');
+                    renderCategoryPills('Tous');
+                    renderArticles();
+                    navigate('home');
+                });
+            }
+
+            const dateEl = document.getElementById('todayDate');
+            if (dateEl) {
+                const d = new Date();
+                dateEl.textContent = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            }
+
+            const darkToggle = document.getElementById('darkToggle');
+            if (darkToggle) {
+                darkToggle.addEventListener('click', toggleDarkMode);
+            }
+
+            const mmToggle = document.getElementById('mobileMenuToggle');
+            const mm = document.getElementById('mobileMenu');
+            if (mmToggle && mm) {
+                mmToggle.addEventListener('click', () => {
+                    mm.classList.toggle('hidden');
+                    const icon = document.getElementById('mobileMenuIcon');
+                    if (icon) {
+                        if (mm.classList.contains('hidden')) {
+                            icon.innerHTML = '<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>';
+                        } else {
+                            icon.innerHTML = '<line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/>';
+                        }
+                    }
+                });
+            }
+
+            // Search
+            const searchToggle = document.getElementById('searchToggle');
+            const searchDropdown = document.getElementById('searchDropdown');
+            const searchInput = document.getElementById('searchInput');
+            if (searchToggle && searchDropdown) {
+                searchToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    searchDropdown.classList.toggle('open');
+                    if (searchDropdown.classList.contains('open')) setTimeout(() => searchInput.focus(), 100);
+                });
+                document.addEventListener('click', (e) => {
+                    if (!searchDropdown.contains(e.target) && e.target !== searchToggle) searchDropdown.classList.remove('open');
+                });
+            }
+            if (searchInput) {
+                let debounceTimer;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        state.searchQuery = searchInput.value.trim();
+                        renderSearchResults(state.searchQuery);
+                    }, 250);
+                });
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        state.searchQuery = searchInput.value.trim();
+                        renderSearchResults(state.searchQuery);
+                    }
+                });
+            }
+
+            const goToAdmin = document.getElementById('goToAdmin');
+            if (goToAdmin) {
+                goToAdmin.addEventListener('click', () => navigate('admin'));
+            }
+        }
+
+        // Search results
+        function renderSearchResults(query) {
+            const container = document.getElementById('searchResults');
+            const empty = document.getElementById('searchEmpty');
+            if (!container) return;
+            if (!query || query.length < 2) {
+                container.innerHTML = '';
+                empty.classList.add('hidden');
+                return;
+            }
+            const results = state.articles.filter(a => articleMatchesSearch(a, query)).slice(0, 8);
+            if (results.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            container.innerHTML = results.map(a =>
+                `<button class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3" data-slug="${a.slug}">
+                    <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-12 h-9 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'">
+                    <div class="min-w-0"><p class="text-sm font-medium text-gray-900 dark:text-white truncate">${a.title}</p>
+                    <span class="text-xs ${getCatTextClass(a.category)}">${a.category}</span></div>
+                </button>`
+            ).join('');
+            container.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('searchDropdown').classList.remove('open');
+                    document.getElementById('searchInput').value = '';
+                    state.searchQuery = '';
+                    renderSearchResults('');
+                    navigateToArticleBySlug(btn.dataset.slug);
+                });
+            });
+        }
+
+        // Category pills
+        function renderCategoryPills(active) {
+            const container = document.getElementById('categoryPills');
+            if (!container) return;
+            // Ne reconstruire que si nécessaire
+            if (container.dataset.active === active) return;
+            container.dataset.active = active;
+            container.innerHTML = CATEGORIES.map(cat =>
+                `<button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${active === cat ? 'bg-[#0a1628] text-white dark:bg-white dark:text-[#0a1628] shadow-md' : 'bg-white dark:bg-[#1a2d47] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'}" data-cat="${cat}">${cat}</button>`
+            ).join('');
+            container.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cat = btn.dataset.cat;
+                    state.currentCategory = cat;
+                    renderCategoryPills(cat);
+                    renderHeader('mainHeader', cat);
+                    renderArticles();
+                });
+            });
+        }
+
+        // Articles grid
+        function renderArticles() {
+            const grid = document.getElementById('articlesGrid');
+            const count = document.getElementById('articleCount');
+            if (!grid) return;
+            let list = [...state.articles];
+            if (state.currentCategory !== 'Tous') list = list.filter(a => a.category === state.currentCategory);
+            if (state.sortBy === 'popular') list.sort((a, b) => b.views - a.views);
+            else list.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+            if (count) count.textContent = `${list.length} article${list.length > 1 ? 's' : ''} trouvé${list.length > 1 ? 's' : ''}`;
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">Aucun article dans cette catégorie</div>`;
+                return;
+            }
+            const isGrid = state.viewMode === 'grid';
+            grid.className = isGrid ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'grid grid-cols-1 gap-4';
+            const favorites = getFavorites();
+            const readLater = getReadLater();
+
+            grid.innerHTML = list.map(a => {
+                const liked = favorites.includes(a.id);
+                const saved = readLater.includes(a.id);
+                const catClass = getCatClass(a.category);
+                const isNew = isNewArticle(a.published_at);
+                if (isGrid) {
+                    return `<div class="bg-white dark:bg-[#1a2d47] rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col" data-slug="${a.slug}">
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="absolute top-3 left-3 flex gap-1.5">
+                                <span class="category-badge ${catClass}">${a.category}</span>
+                                ${a.is_breaking ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}
+                            </div>
+                            ${isNew ? '<span class="absolute top-3 right-3 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
+                            <div class="absolute bottom-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button class="fav-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
+                                <button class="save-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+                                <button class="share-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug hover:text-[#f5c518] transition-colors line-clamp-2 mb-2">${a.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1">${a.summary || ''}</p>
+                            <div class="flex items-center justify-between text-gray-400 text-xs pt-3 border-t border-gray-100 dark:border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(a.published_at)}</span>
+                                    <span>${a.read_time || 3} min</span>
+                                </div>
+                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    return `<div class="group flex gap-4 p-4 bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-all duration-300 cursor-pointer" data-slug="${a.slug}">
+                        <div class="relative w-40 h-28 shrink-0 overflow-hidden rounded-lg">
+                            <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'">
+                            ${isNew ? '<span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white ${catClass} mb-1.5">${a.category}</span>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#f5c518] transition-colors line-clamp-2 mb-1">${a.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">${a.summary || ''}</p>
+                            <div class="flex items-center gap-3 text-gray-400 text-xs">
+                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(a.published_at)}</span>
+                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
+                                <span>${a.read_time || 3} min</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button class="fav-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
+                            <button class="save-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+                            <button class="share-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
+                        </div>
+                    </div>`;
+                }
+            }).join('');
+
+            grid.querySelectorAll('[data-slug]').forEach(el => {
+                if (!el.classList.contains('fav-btn') && !el.classList.contains('save-btn') && !el.classList.contains('share-btn')) {
+                    el.addEventListener('click', () => {
+                        if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug);
+                    });
+                }
+            });
+            grid.querySelectorAll('.fav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(btn.dataset.id); renderArticles(); });
+            });
+            grid.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); toggleReadLater(btn.dataset.id); renderArticles(); });
+            });
+            grid.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); shareArticle(btn.dataset.id); });
+            });
+        }
+
+        // Sidebar
+        function renderSidebar() {
+            const container = document.getElementById('sidebar');
+            if (!container) return;
+            const popular = [...state.articles].sort((a, b) => b.views - a.views).slice(0, 5);
+            const recent = [...state.articles].sort((a, b) => new Date(b.published_at) - new Date(a.published_at)).slice(0, 5);
+            container.innerHTML = `
+            <div class="space-y-6">
+                <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5">
+                    <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><h3 class="font-bold text-gray-900 dark:text-white">Les plus lus</h3></div>
+                    <div class="space-y-3">${popular.map((a,i) => `<div class="group flex gap-3 cursor-pointer sidebar-article" data-slug="${a.slug}"><span class="text-2xl font-black text-gray-200 dark:text-gray-700 shrink-0 w-6">${i+1}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="flex items-center gap-1 text-xs text-gray-400 mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></div>`).join('')}</div>
+                </div>
+                <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5">
+                    <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3 class="font-bold text-gray-900 dark:text-white">Dernières actualités</h3></div>
+                    <div class="space-y-3">${recent.map(a => `<div class="group flex gap-3 cursor-pointer sidebar-article" data-slug="${a.slug}"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-16 h-12 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="text-xs text-gray-400">${formatDate(a.published_at)}</span></div></div>`).join('')}</div>
+                </div>
+                <div class="bg-[#0a1628] rounded-xl p-5 text-white">
+                    <div class="flex items-center gap-2 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><h3 class="font-bold">Newsletter</h3></div>
+                    <p class="text-sm text-gray-300 mb-4">Recevez chaque matin les titres qui font l'actualité.</p>
+                    <form id="newsletterForm" class="space-y-2">
+                        <input type="email" id="newsletterEmail" required placeholder="Votre email" class="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none">
+                        <button type="submit" class="w-full py-2.5 bg-[#f5c518] text-[#0a1628] font-bold rounded-lg hover:bg-[#d4a017] transition-colors text-sm flex items-center justify-center gap-1">S'abonner <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+                    </form>
+                    <div id="newsletterMsg" class="hidden mt-2 text-sm text-green-400"></div>
+                </div>
+                <div class="bg-gray-100 dark:bg-[#1a2d47] rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 flex items-center justify-center h-[250px]"><div class="text-center"><p class="text-gray-400 text-sm font-medium">Publicité</p><p class="text-gray-300 text-xs mt-1">300 x 250</p></div></div>
+            </div>`;
+            container.querySelectorAll('.sidebar-article').forEach(el => el.addEventListener('click', () => { if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug); }));
+            const nForm = document.getElementById('newsletterForm');
+            if (nForm) {
+                nForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('newsletterEmail').value;
+                    const result = await subscribeNewsletter(email);
+                    const msg = document.getElementById('newsletterMsg');
+                    if (result.error) { msg.textContent = 'Erreur, veuillez réessayer.'; msg.className = 'mt-2 text-sm text-red-400'; } else { msg.textContent = 'Merci pour votre inscription !'; msg.className = 'mt-2 text-sm text-green-400'; document.getElementById('newsletterEmail').value = ''; }
+                    msg.classList.remove('hidden');
+                    setTimeout(() => msg.classList.add('hidden'), 4000);
+                });
+            }
+        }
+
+        // Hero
+        function renderHero() {
+            const container = document.getElementById('heroGrid');
+            if (!container) return;
+            const featured = state.articles.filter(a => a.is_featured).slice(0, 3);
+            if (featured.length === 0) {
+                container.innerHTML = `<div class="lg:col-span-2 h-96 skeleton rounded-2xl"></div><div class="space-y-4"><div class="h-44 skeleton rounded-xl"></div><div class="h-44 skeleton rounded-xl"></div></div>`;
+                return;
+            }
+            const main = featured[0];
+            const subs = featured.slice(1, 3);
+            container.innerHTML = `
+            <div class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl hero-main" data-slug="${main.slug}">
+                <div class="relative h-80 lg:h-[420px]"><img src="${main.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'}" alt="${main.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div></div>
+                <div class="absolute bottom-0 left-0 right-0 p-6">
+                    <div class="flex items-center gap-2 mb-3"><span class="category-badge ${getCatClass(main.category)}">${main.category}</span>${main.is_breaking ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}${isNewArticle(main.published_at) ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}</div>
+                    <h2 class="text-2xl lg:text-3xl font-bold text-white mb-2 leading-tight group-hover:text-[#f5c518] transition-colors">${main.title}</h2>
+                    <p class="text-gray-200 text-sm mb-3 line-clamp-2 max-w-2xl">${main.summary || ''}</p>
+                    <div class="flex items-center gap-4 text-gray-300 text-xs">
+                        <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(main.published_at)}</span>
+                        <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(main.views || 0).toLocaleString('fr-FR')}</span>
+                        <span class="flex items-center gap-1 text-[#f5c518] font-medium group-hover:translate-x-1 transition-transform">Lire l'article <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-4">${subs.map(a => `<div class="relative group cursor-pointer overflow-hidden rounded-xl flex-1 hero-sub" data-slug="${a.slug}"><div class="relative h-44 lg:h-full min-h-[160px]"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div></div><div class="absolute bottom-0 left-0 right-0 p-4"><span class="category-badge ${getCatClass(a.category)} inline-block mb-2">${a.category}</span><h3 class="text-base font-bold text-white leading-tight group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</h3><div class="flex items-center gap-3 text-gray-300 text-[10px] mt-2"><span>${formatDate(a.published_at)}</span><span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></div></div>`).join('')}</div>`;
+            container.querySelectorAll('.hero-main, .hero-sub').forEach(el => el.addEventListener('click', () => { if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug); }));
+        }
+
+        // Breaking Bar
+        function renderBreakingBar() {
+            const bar = document.getElementById('breakingBar');
+            const ticker = document.getElementById('breakingTicker');
+            if (!bar || !ticker) return;
+            const breaking = state.articles.filter(a => a.is_breaking).slice(0, 3);
+            if (breaking.length === 0) { bar.classList.add('hidden'); return; }
+            bar.classList.remove('hidden');
+            const items = breaking.map(a => `<button class="text-sm hover:underline mx-4 breaking-item" data-slug="${a.slug}">${a.title}</button>`).join('');
+            ticker.innerHTML = items + items;
+            ticker.querySelectorAll('.breaking-item').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.slug) navigateToArticleBySlug(btn.dataset.slug); }));
+        }
+
+        // Article Detail
+        async function renderArticleDetailBySlug(slug) {
+            const container = document.getElementById('articleDetail');
+            if (!container) return;
+            container.innerHTML = `<div class="space-y-4"><div class="h-8 skeleton rounded w-1/4"></div><div class="h-96 skeleton rounded-2xl"></div><div class="space-y-3"><div class="h-4 skeleton rounded w-full"></div><div class="h-4 skeleton rounded w-5/6"></div></div></div>`;
+            try {
+                const article = await fetchArticleBySlug(slug);
+                if (!article) { container.innerHTML = `<div class="text-center py-12"><h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Article non trouvé</h1><button onclick="navigate('home')" class="text-[#f5c518] hover:underline">Retour à l'accueil</button></div>`; return; }
+                state.currentArticleId = article.id;
+                const comments = await fetchComments(article.id);
+                const favs = getFavorites();
+                const readLater = getReadLater();
+                const liked = favs.includes(article.id);
+                const saved = readLater.includes(article.id);
+
+                container.innerHTML = `
+                <button onclick="navigate('home')" class="flex items-center gap-1 text-sm text-gray-500 hover:text-[#f5c518] transition-colors mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Retour à l'accueil</button>
+                <div class="flex items-center gap-2 mb-4"><span class="category-badge ${getCatClass(article.category)}">${article.category}</span>${article.is_breaking ? '<span class="px-3 py-1 rounded-full text-xs font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}</div>
+                <h1 class="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white leading-tight mb-4">${article.title}</h1>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center gap-2"><img src="${article.author_avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80'}" alt="" class="w-8 h-8 rounded-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80'"><span class="font-medium text-gray-700 dark:text-gray-300">${article.author_name || 'Rédaction'}</span></div>
+                    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(article.published_at)}</span>
+                    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(article.views || 0).toLocaleString('fr-FR')} vues</span>
+                    <span>${article.read_time || 3} min de lecture</span>
+                </div>
+                <div class="relative rounded-2xl overflow-hidden mb-8"><img src="${article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'}" alt="${article.title}" class="w-full h-80 lg:h-[480px] object-cover" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'"></div>
+                <div class="flex items-center justify-between mb-8 py-4 border-y border-gray-200 dark:border-gray-800 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <button id="detailFav" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${liked ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> ${liked ? 'Aimé' : "J'aime"}</button>
+                        <button id="detailSave" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${saved ? 'bg-[#f5c518]/10 text-[#f5c518]' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg> ${saved ? 'Sauvegardé' : 'Lire plus tard'}</button>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="share-social p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400" data-platform="facebook" aria-label="Partager sur Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></button>
+                        <button class="share-social p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400" data-platform="twitter" aria-label="Partager sur Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></button>
+                        <button class="share-social p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400" data-platform="linkedin" aria-label="Partager sur LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></button>
+                        <button class="share-social p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400" data-platform="copy" aria-label="Copier le lien"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+                    </div>
+                </div>
+                <article class="article-content text-gray-800 dark:text-gray-200 leading-relaxed mb-12">
+                    <p class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6 font-medium">${article.summary || ''}</p>
+                    <div class="whitespace-pre-line">${article.content || ''}</div>
+                </article>
+                ${article.tags && article.tags.length ? `<div class="flex flex-wrap gap-2 mb-10">${article.tags.map(t => `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs text-gray-600 dark:text-gray-400">#${t}</span>`).join('')}</div>` : ''}
+                <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-6">
+                    <div class="flex items-center gap-2 mb-6"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><h3 class="font-bold text-gray-900 dark:text-white">Commentaires (${comments.length})</h3></div>
+                    <form id="commentForm" class="mb-8">
+                        <div class="flex gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                            <div class="flex-1 space-y-2">
+                                <input type="text" id="commentName" placeholder="Votre nom" required class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white" aria-label="Votre nom">
+                                <textarea id="commentText" placeholder="Partagez votre avis..." required rows="3" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none resize-none text-gray-900 dark:text-white" aria-label="Votre commentaire"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" id="commentSubmit" class="px-5 py-2.5 bg-[#0a1628] text-white rounded-lg text-sm font-medium hover:bg-[#1a2d47] transition-colors flex items-center gap-2 dark:bg-white dark:text-[#0a1628] dark:hover:bg-gray-200"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Publier</button>
+                        </div>
+                    </form>
+                    <div id="commentsList" class="space-y-4">${comments.map(c => `<div class="flex gap-3 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0"><div class="w-10 h-10 rounded-full bg-[#f5c518]/20 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="flex items-center gap-2 mb-1"><span class="font-medium text-gray-900 dark:text-white text-sm">${c.author_name}</span><span class="text-xs text-gray-400">${formatDate(c.created_at)}</span></div><p class="text-sm text-gray-600 dark:text-gray-300">${c.content}</p></div></div>`).join('')}${comments.length === 0 ? '<p class="text-center text-gray-400 text-sm py-4">Aucun commentaire pour le moment. Soyez le premier à réagir !</p>' : ''}</div>
+                </div>`;
+
+                document.getElementById('detailFav')?.addEventListener('click', () => { toggleFavorite(article.id); renderArticleDetailBySlug(slug); });
+                document.getElementById('detailSave')?.addEventListener('click', () => { toggleReadLater(article.id); renderArticleDetailBySlug(slug); });
+                document.querySelectorAll('.share-social').forEach(btn => btn.addEventListener('click', () => { shareArticle(article.id, btn.dataset.platform); }));
+
+                const commentForm = document.getElementById('commentForm');
+                if (commentForm) {
+                    commentForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const name = document.getElementById('commentName').value.trim();
+                        const text = document.getElementById('commentText').value.trim();
+                        if (!name || !text || !article.id) return;
+                        const submitBtn = document.getElementById('commentSubmit');
+                        const originalHtml = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<span class="spinner"></span> Envoi...';
+                        submitBtn.disabled = true;
+                        const result = await postComment(article.id, name, text);
+                        submitBtn.innerHTML = originalHtml;
+                        submitBtn.disabled = false;
+                        if (result.error) { showToast('Erreur lors de l\'envoi du commentaire', 'error'); } else { showToast('Commentaire publié !', 'success'); document.getElementById('commentText').value = ''; renderArticleDetailBySlug(slug); }
+                    });
+                }
+                document.querySelector('.reading-progress-bar').style.width = '0%';
+            } catch (err) {
+                container.innerHTML = `<div class="text-center py-12"><p class="text-red-500">Erreur de chargement : ${err.message}</p><button onclick="navigate('home')" class="text-[#f5c518] hover:underline">Retour à l'accueil</button></div>`;
+            }
+        }
+
+        // ================================================================
+        // FAVORITE / READ LATER / SHARE
+        // ================================================================
+        function toggleFavorite(id) {
+            const favs = getFavorites();
+            const idx = favs.indexOf(id);
+            if (idx >= 0) { favs.splice(idx, 1); showToast('Retiré des favoris', 'info'); } else { favs.push(id); showToast('Ajouté aux favoris', 'success'); }
+            setFavorites(favs);
+        }
+
+        function toggleReadLater(id) {
+            const list = getReadLater();
+            const idx = list.indexOf(id);
+            if (idx >= 0) { list.splice(idx, 1); showToast('Retiré de la liste', 'info'); } else { list.push(id); showToast('Sauvegardé pour plus tard', 'success'); }
+            setReadLater(list);
+        }
+
+        function shareArticle(id, platform) {
+            const a = state.articles.find(x => x.id === id);
+            const url = `${window.location.origin}/article/${a?.slug || id}`;
+            const text = a ? a.title : '';
+            if (platform === 'copy') { navigator.clipboard.writeText(url).then(() => showToast('Lien copié !', 'success')); return; }
+            const shareUrls = { facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` };
+            if (platform && shareUrls[platform]) { window.open(shareUrls[platform], '_blank', 'width=600,height=400'); } else if (navigator.share) { navigator.share({ title: text, url }).catch(() => {}); } else { navigator.clipboard.writeText(url).then(() => showToast('Lien copié !', 'success')); }
+        }
+
+        // ================================================================
+        // DARK MODE
+        // ================================================================
+        function toggleDarkMode() {
+            state.isDark = !state.isDark;
+            document.documentElement.classList.toggle('dark', state.isDark);
+            localStorage.setItem('buzzplus-dark-mode', String(state.isDark));
+            const icon = document.getElementById('darkIcon');
+            if (icon) {
+                if (state.isDark) {
+                    icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M12 7v2"/><path d="M12 15v2"/><path d="M16.5 7.5 15 9"/><path d="M9 15 7.5 16.5"/><path d="M18 12h2"/><path d="M10 12h-4"/><path d="M16.5 16.5 15 15"/><path d="M9 9 7.5 7.5"/>';
+                } else {
+                    icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>';
+                }
+            }
+        }
+
+        function initDarkMode() {
+            const saved = localStorage.getItem('buzzplus-dark-mode');
+            state.isDark = saved !== null ? saved === 'true' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (state.isDark) { document.documentElement.classList.add('dark'); const icon = document.getElementById('darkIcon'); if (icon) icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M12 7v2"/><path d="M12 15v2"/><path d="M16.5 7.5 15 9"/><path d="M9 15 7.5 16.5"/><path d="M18 12h2"/><path d="M10 12h-4"/><path d="M16.5 16.5 15 15"/><path d="M9 9 7.5 7.5"/>'; }
+            localStorage.setItem('buzzplus-dark-mode', String(state.isDark));
+        }
+
+        // ================================================================
+        // NAVIGATION
+        // ================================================================
+        function navigate(page, params) {
+            state.currentPage = page;
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            if (page === 'home') {
+                document.getElementById('page-home').classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                renderHero();
+                renderBreakingBar();
+                renderArticles();
+                renderSidebar();
+                history.pushState(null, '', '/');
+            } else if (page === 'article') {
+                document.getElementById('page-article').classList.add('active');
+                if (params && params.slug) {
+                    renderArticleDetailBySlug(params.slug);
+                    history.pushState(null, '', `/article/${params.slug}`);
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (page === 'admin') {
+                document.getElementById('page-admin').classList.add('active');
+                renderAdminPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                history.pushState(null, '', '/admin');
+            }
+        }
+
+        function navigateToArticleBySlug(slug) { navigate('article', { slug }); }
+
+        // ================================================================
+        // ADMIN PAGE (avec Supabase Auth)
+        // ================================================================
+        async function renderAdminPage() {
+            const container = document.getElementById('adminApp');
+            if (!container) return;
+            const user = await checkAdminSession();
+            if (!user) {
+                // Afficher le formulaire de connexion
+                container.innerHTML = `
+                <div class="admin-login">
+                    <div class="bg-white dark:bg-[#1a2d47] rounded-2xl shadow-xl p-8 w-full max-w-sm border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center justify-center mb-6"><div class="w-16 h-16 bg-[#0a1628] rounded-2xl flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></div>
+                        <h1 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-2">Panel Admin</h1>
+                        <p class="text-sm text-center text-gray-500 dark:text-gray-400 mb-6">Connexion avec votre compte Supabase</p>
+                        <form id="adminLoginForm" class="space-y-4">
+                            <input type="email" id="adminEmail" placeholder="Email" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white" required>
+                            <input type="password" id="adminPassword" placeholder="Mot de passe" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white" required>
+                            <button type="submit" id="adminLoginBtn" class="w-full py-3 bg-[#0a1628] text-white rounded-xl font-bold hover:bg-[#1a2d47] transition-colors dark:bg-white dark:text-[#0a1628] dark:hover:bg-gray-200 flex items-center justify-center gap-2">Se connecter</button>
+                        </form>
+                        <button onclick="navigate('home')" class="w-full mt-3 py-2 text-sm text-gray-500 hover:text-[#f5c518] transition-colors">Retour au site</button>
+                        <div id="adminLoginError" class="mt-2 text-sm text-red-500 hidden"></div>
+                    </div>
+                </div>`;
+                document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('adminEmail').value;
+                    const password = document.getElementById('adminPassword').value;
+                    const btn = document.getElementById('adminLoginBtn');
+                    const errorEl = document.getElementById('adminLoginError');
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner"></span> Connexion...';
+                    btn.disabled = true;
+                    try {
+                        await signInAdmin(email, password);
+                        showToast('Connexion réussie', 'success');
+                        renderAdminPage();
+                    } catch (err) {
+                        errorEl.textContent = err.message;
+                        errorEl.classList.remove('hidden');
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                });
+                return;
+            }
+
+            // Admin connecté
+            container.innerHTML = `
+            <div class="min-h-screen bg-[#f4f6f9] dark:bg-[#0a0a14]">
+                <div class="bg-[#0a1628] text-white"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><h1 class="text-lg font-bold">BUZZ PLUS 225 - Admin</h1><button id="adminLogout" class="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg hover:bg-white/20 transition-colors text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg> Déconnexion</button></div></div>
+                <div class="max-w-7xl mx-auto px-4 py-4">
+                    <div class="flex gap-2 mb-6 flex-wrap">
+                        <button class="admin-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-[#0a1628] text-white dark:bg-white dark:text-[#0a1628]" data-tab="articles"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg> Articles</button>
+                        <button class="admin-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white dark:bg-[#1a2d47] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700" data-tab="create"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Nouvel article</button>
+                        <button class="admin-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white dark:bg-[#1a2d47] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700" data-tab="stats"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Statistiques</button>
+                    </div>
+                    <div id="adminContent"></div>
+                </div>
+            </div>`;
+
+            document.getElementById('adminLogout')?.addEventListener('click', async () => { await signOutAdmin(); showToast('Déconnecté', 'info'); renderAdminPage(); });
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.admin-tab').forEach(t => { t.className = 'admin-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-white dark:bg-[#1a2d47] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700'; });
+                    tab.className = 'admin-tab flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-[#0a1628] text-white dark:bg-white dark:text-[#0a1628]';
+                    renderAdminTab(tab.dataset.tab);
+                });
+            });
+            renderAdminTab('articles');
+        }
+
+        async function renderAdminTab(tab) {
+            const container = document.getElementById('adminContent');
+            if (!container) return;
+            if (tab === 'stats') {
+                const articles = state.articles;
+                const totalViews = articles.reduce((s, a) => s + (a.views || 0), 0);
+                const featured = articles.filter(a => a.is_featured).length;
+                const breaking = articles.filter(a => a.is_breaking).length;
+                container.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg></div><div><p class="text-2xl font-bold text-gray-900 dark:text-white">${articles.length}</p><p class="text-sm text-gray-500 dark:text-gray-400">Articles</p></div></div></div>
+                    <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></div><div><p class="text-2xl font-bold text-gray-900 dark:text-white">${totalViews.toLocaleString('fr-FR')}</p><p class="text-sm text-gray-500 dark:text-gray-400">Vues totales</p></div></div></div>
+                    <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#f5c518] rounded-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div><p class="text-2xl font-bold text-gray-900 dark:text-white">${featured}</p><p class="text-sm text-gray-500 dark:text-gray-400">À la une</p></div></div></div>
+                    <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div><p class="text-2xl font-bold text-gray-900 dark:text-white">${breaking}</p><p class="text-sm text-gray-500 dark:text-gray-400">Breaking</p></div></div></div>
+                </div>`;
+                return;
+            }
+            if (tab === 'create') {
+                container.innerHTML = `
+                <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Nouvel article</h2>
+                    <form id="adminArticleForm" class="space-y-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Titre</label><input type="text" id="aTitle" required class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Catégorie</label><select id="aCategory" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white">${CATEGORIES.filter(c=>c!=='Tous').map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Résumé</label><textarea id="aSummary" rows="2" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none resize-none text-gray-900 dark:text-white"></textarea></div>
+                        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Contenu</label><textarea id="aContent" rows="8" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none resize-none text-gray-900 dark:text-white"></textarea></div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">URL de l'image</label><input type="url" id="aImage" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tags (séparés par des virgules)</label><input type="text" id="aTags" class="w-full px-4 py-2.5 rounded-lg bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white"></div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="aFeatured" class="w-4 h-4 rounded border-gray-300 text-[#f5c518] focus:ring-[#f5c518]"> <span class="text-sm text-gray-700 dark:text-gray-300">Mettre à la une</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="aBreaking" class="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"> <span class="text-sm text-gray-700 dark:text-gray-300">Breaking news</span></label>
+                        </div>
+                        <button type="submit" id="adminPublishBtn" class="px-6 py-2.5 bg-[#0a1628] text-white rounded-lg font-medium hover:bg-[#1a2d47] transition-colors flex items-center gap-2 dark:bg-white dark:text-[#0a1628] dark:hover:bg-gray-200"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Publier</button>
+                    </form>
+                    <div id="adminFormMsg" class="mt-4 hidden"></div>
+                </div>`;
+                document.getElementById('adminArticleForm')?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const msg = document.getElementById('adminFormMsg');
+                    const title = document.getElementById('aTitle').value.trim();
+                    const slug = generateSlug(title);
+                    const data = {
+                        title, slug, summary: document.getElementById('aSummary').value.trim(),
+                        content: document.getElementById('aContent').value.trim(),
+                        category: document.getElementById('aCategory').value,
+                        image_url: document.getElementById('aImage').value.trim() || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+                        author_name: 'Rédaction',
+                        author_avatar: 'https://images.unsplash.com/profile-1782884742468-5e2f553f7732image?ixlib=imgixjs-3.3.2&crop=faces&fit=crop&w=200&h=200',
+                        is_featured: document.getElementById('aFeatured').checked,
+                        is_breaking: document.getElementById('aBreaking').checked,
+                        tags: document.getElementById('aTags').value.split(',').map(s => s.trim()).filter(Boolean),
+                        read_time: Math.ceil((document.getElementById('aContent').value.trim().split(/\s+/).length || 0) / 200) || 3,
+                        published_at: new Date().toISOString(),
+                        views: 0,
+                    };
+                    const btn = document.getElementById('adminPublishBtn');
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner"></span> Publication...';
+                    btn.disabled = true;
+                    try {
+                        const result = await supabaseInsert('articles', data);
+                        if (result.error) { msg.textContent = 'Erreur: ' + result.error; msg.className = 'mt-4 text-red-500'; msg.classList.remove('hidden'); showToast('Erreur lors de la création', 'error'); } else { msg.textContent = 'Article publié avec succès ! Slug: ' + slug; msg.className = 'mt-4 text-green-500'; msg.classList.remove('hidden'); showToast('Article créé !', 'success'); state.articles = await fetchArticles(state.currentCategory); document.getElementById('adminArticleForm').reset(); setTimeout(() => msg.classList.add('hidden'), 3000); }
+                    } catch (err) { msg.textContent = 'Erreur: ' + err.message; msg.className = 'mt-4 text-red-500'; msg.classList.remove('hidden'); }
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+                return;
+            }
+            // Liste des articles
+            container.innerHTML = `
+            <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-[#0a1628]"><tr><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Titre</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Slug</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Catégorie</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Vues</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Actions</th></tr></thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800" id="adminTableBody">
+                            ${state.articles.map(a => `<tr><td class="px-4 py-3"><div class="flex items-center gap-3"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-10 h-8 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs">${a.title}</span>${a.is_featured ? '<span class="px-1.5 py-0.5 bg-[#f5c518]/20 text-[#f5c518] text-[10px] rounded font-bold">UNE</span>' : ''}${a.is_breaking ? '<span class="px-1.5 py-0.5 bg-red-500/20 text-red-500 text-[10px] rounded font-bold">BREAKING</span>' : ''}</div></td><td class="px-4 py-3 text-sm font-mono text-gray-500 dark:text-gray-400">${a.slug || '—'}</td><td class="px-4 py-3"><span class="category-badge ${getCatClass(a.category)}">${a.category}</span></td><td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${(a.views || 0).toLocaleString('fr-FR')}</td><td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">${new Date(a.published_at).toLocaleDateString('fr-FR')}</td><td class="px-4 py-3"><div class="flex items-center gap-1"><button class="admin-view-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400" data-slug="${a.slug}" aria-label="Voir l'article"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button><button class="admin-delete-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-400" data-id="${a.id}" aria-label="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button></div></td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+            container.querySelectorAll('.admin-view-btn').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.slug) navigateToArticleBySlug(btn.dataset.slug); }));
+            container.querySelectorAll('.admin-delete-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Supprimer cet article ?')) return;
+                    try {
+                        const result = await supabaseQuery('articles', { deleteId: btn.dataset.id });
+                        if (result.error) { showToast('Erreur lors de la suppression', 'error'); } else { showToast('Article supprimé', 'success'); state.articles = await fetchArticles(state.currentCategory); renderAdminTab('articles'); }
+                    } catch (err) { showToast('Erreur: ' + err.message, 'error'); }
+                });
+            });
+        }
+
+        // ================================================================
+        // FOOTER CATEGORIES
+        // ================================================================
+        function renderFooterCategories() {
+            const container = document.getElementById('footerCategories');
+            if (!container) return;
+            const cats = CATEGORIES.filter(c => c !== 'Tous');
+            container.innerHTML = cats.map(c => `<li><button class="hover:text-[#f5c518] transition-colors footer-cat-btn" data-cat="${c}">${c}</button></li>`).join('');
+            container.querySelectorAll('.footer-cat-btn').forEach(btn => btn.addEventListener('click', () => { state.currentCategory = btn.dataset.cat; renderHeader('mainHeader', state.currentCategory); renderCategoryPills(state.currentCategory); renderArticles(); navigate('home'); }));
+            document.getElementById('footerYear').textContent = new Date().getFullYear();
+        }
+
+        // ================================================================
+        // SCROLL LISTENERS
+        // ================================================================
+        function initScrollListeners() {
+            const backBtn = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                const y = window.scrollY;
+                const docH = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = docH > 0 ? (y / docH) * 100 : 0;
+                const bar = document.getElementById('readingProgressBar');
+                if (bar) bar.style.width = Math.min(progress, 100) + '%';
+                if (backBtn) { if (y > 400) backBtn.classList.add('visible'); else backBtn.classList.remove('visible'); }
+            });
+            if (backBtn) backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
+
+        // ================================================================
+        // CONTROLS (VIEW / SORT)
+        // ================================================================
+        function initControls() {
+            const gridBtn = document.getElementById('viewGrid');
+            const listBtn = document.getElementById('viewList');
+            const sortSelect = document.getElementById('sortSelect');
+            if (gridBtn) {
+                gridBtn.addEventListener('click', () => { state.viewMode = 'grid'; gridBtn.className = 'p-1.5 rounded-md transition-colors bg-gray-100 dark:bg-gray-700 text-[#0a1628] dark:text-white'; listBtn.className = 'p-1.5 rounded-md transition-colors text-gray-400'; renderArticles(); });
+            }
+            if (listBtn) {
+                listBtn.addEventListener('click', () => { state.viewMode = 'list'; listBtn.className = 'p-1.5 rounded-md transition-colors bg-gray-100 dark:bg-gray-700 text-[#0a1628] dark:text-white'; gridBtn.className = 'p-1.5 rounded-md transition-colors text-gray-400'; renderArticles(); });
+            }
+            if (sortSelect) { sortSelect.addEventListener('change', () => { state.sortBy = sortSelect.value; renderArticles(); }); }
+        }
+
+        // ================================================================
+        // GENERATE SITEMAP (console log)
+        // ================================================================
+        function generateSitemap() {
+            // À exécuter manuellement ou lors du build.
+            // Ce code affiche le sitemap dans la console pour que vous puissiez le copier.
+            // Pensez à créer un fichier sitemap.xml à la racine.
+            const baseUrl = 'https://buzzplus225.github.io';
+            const today = new Date().toISOString().split('T')[0];
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${baseUrl}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`;
+            state.articles.forEach(a => {
+                const slug = a.slug || a.id;
+                const date = new Date(a.published_at).toISOString().split('T')[0];
+                xml += `\n<url><loc>${baseUrl}/article/${slug}</loc><lastmod>${date}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+            });
+            xml += '\n</urlset>';
+            console.log('📄 Sitemap à copier dans sitemap.xml :\n', xml);
+            // Créez également un fichier robots.txt à la racine avec :
+            // User-agent: *
+            // Allow: /
+            // Sitemap: https://buzzplus225.github.io/sitemap.xml
+            return xml;
+        }
+
+        // ================================================================
+        // POPSTATE (navigation arrière)
+        // ================================================================
+        window.addEventListener('popstate', () => {
+            const path = window.location.pathname;
+            if (path === '/' || path === '') navigate('home');
+            else if (path.startsWith('/article/')) {
+                const slug = path.split('/')[2];
+                if (slug) navigate('article', { slug });
+            } else if (path === '/admin') navigate('admin');
+            else navigate('home');
+        });
+
+        // ================================================================
+        // INIT
+        // ================================================================
+        async function init() {
+            initDarkMode();
+            initScrollListeners();
+            renderFooterCategories();
+
+            state.articles = await fetchArticles('Tous');
+
+            renderHeader('mainHeader', 'Tous');
+            renderCategoryPills('Tous');
+            renderHero();
+            renderBreakingBar();
+            renderArticles();
+            renderSidebar();
+            initControls();
+
+            // Route initiale
+            const path = window.location.pathname;
+            if (path.startsWith('/article/')) {
+                const slug = path.split('/')[2];
+                if (slug) navigate('article', { slug });
+            } else if (path === '/admin') {
+                navigate('admin');
+            } else {
+                navigate('home');
+            }
+
+            // Génération du sitemap (dans la console)
+            generateSitemap();
+
+            document.getElementById('logoLink')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                state.currentCategory = 'Tous';
+                renderHeader('mainHeader', 'Tous');
+                renderCategoryPills('Tous');
+                renderArticles();
+                navigate('home');
+            });
+
+            console.log('🚀 BUZZ PLUS 225 initialisé avec Supabase Auth et slugs !');
+        }
+
+        // Expose navigation globally for inline onclick
+        window.navigate = navigate;
+        window.navigateToArticleBySlug = navigateToArticleBySlug;
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
