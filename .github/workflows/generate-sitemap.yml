@@ -1,0 +1,50 @@
+name: Générer le sitemap
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  generate-sitemap:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24' # Passage à Node 24 pour supprimer le warning de dépréciation
+          
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci || npm install
+          fi
+
+      # Étape de débogage pour lister les fichiers et s'assurer que le dossier/fichier existe
+      - name: Vérifier la structure des fichiers
+        run: |
+          echo "=== Contenu de la racine ==="
+          ls -la
+          echo "=== Contenu du dossier scripts ==="
+          ls -la scripts || echo "Le dossier 'scripts' n'existe pas ou est mal nommé"
+        
+      - name: Generate sitemap
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/generate-sitemap.js
+        
+      - name: Commit and push sitemap
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add sitemap.xml
+          git diff --staged --quiet || (git commit -m "🔄 Mise à jour automatique du sitemap [skip ci]" && git push)
