@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Balises par défaut (seront écrasées dynamiquement) -->
     <title>BUZZ PLUS 225 - L'info qui buzz</title>
     <meta name="description" content="Média numérique premium couvrant l'actualité ivoirienne, africaine et internationale." />
+    <!-- Open Graph par défaut -->
+    <meta property="og:title" content="BUZZ PLUS 225" />
+    <meta property="og:description" content="L'info qui buzz, l'actualité qui connecte" />
+    <meta property="og:image" content="https://buzzplus225.github.io/og-image.jpg" />
+    <meta property="og:url" content="https://buzzplus225.github.io/" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://buzzplus225.github.io/" />
+    <!-- Balise pour éviter l'indexation en cas d'erreur (gérée par JS) -->
+    <meta name="robots" id="robotsMeta" content="index, follow" />
+
     <meta name="google-site-verification" content="ZhBAzX2KWa7_eI89HUvOSJaWyfIrDM_RPIBRDbPdUkE" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,12 +90,18 @@
         .article-content li { margin-bottom:0.5rem; }
         @media (max-width:640px) { .search-dropdown { width:280px; right:-60px; } }
 
-        /* Spinner pour les chargements */
         .spinner { display:inline-block; width:1.2rem; height:1.2rem; border:3px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 0.6s linear infinite; }
         .spinner-dark { border-color:rgba(0,0,0,0.2); border-top-color:#0a1628; }
         @keyframes spin { to { transform:rotate(360deg); } }
         .loading-overlay { position:relative; }
         .loading-overlay .spinner { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+        
+        /* ===== NOUVEAU : rendre les liens d'articles cliquables sans perdre l'effet ===== */
+        .article-link { display: block; text-decoration: none; color: inherit; }
+        .article-link:hover { text-decoration: none; }
+        .article-card { transition: all 0.3s ease; }
+        .article-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .dark .article-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -400,7 +417,6 @@
                 .trim();
         }
 
-        // Recherche insensible à la casse et aux accents
         function normalizeStr(str) {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         }
@@ -413,7 +429,7 @@
         }
 
         // ================================================================
-        // SUPABASE HELPERS (avec gestion d'erreur améliorée)
+        // SUPABASE HELPERS
         // ================================================================
         async function supabaseQuery(table, opts = {}) {
             const { select = '*', eqCol, eqVal, ilikeCol, ilikeVal, order = 'created_at', asc = false, limit = 100, single = false, method = 'GET', body = null, patchData = null, deleteId = null } = opts;
@@ -511,7 +527,6 @@
         async function checkAdminSession() {
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) return null;
-            // Vérifier que l'utilisateur a le rôle admin (ex: dans la table profiles)
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
@@ -524,7 +539,6 @@
         async function signInAdmin(email, password) {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw new Error(error.message);
-            // Vérifier le rôle admin
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('role')
@@ -542,7 +556,80 @@
         }
 
         // ================================================================
-        // RENDER FUNCTIONS (avec optimisations)
+        // SEO : mise à jour des balises meta
+        // ================================================================
+        function updateMetaTags(article, isError = false) {
+            const baseUrl = 'https://buzzplus225.github.io';
+            const robots = document.getElementById('robotsMeta');
+            if (isError) {
+                document.title = 'Article non trouvé - BUZZ PLUS 225';
+                document.querySelector('meta[name="description"]').setAttribute('content', 'Article introuvable sur BUZZ PLUS 225.');
+                document.querySelector('meta[property="og:title"]').setAttribute('content', 'Article non trouvé');
+                document.querySelector('meta[property="og:description"]').setAttribute('content', 'Article introuvable.');
+                document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
+                document.querySelector('link[rel="canonical"]').setAttribute('href', window.location.href);
+                if (robots) robots.setAttribute('content', 'noindex, follow');
+                // Supprimer l'ancien JSON-LD
+                const oldLd = document.querySelector('script[type="application/ld+json"]');
+                if (oldLd) oldLd.remove();
+                return;
+            }
+
+            // Article trouvé
+            const title = `${article.title} - BUZZ PLUS 225`;
+            const description = article.summary || article.title;
+            const image = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80';
+            const url = `${baseUrl}/article/${article.slug}`;
+            const published = new Date(article.published_at).toISOString();
+
+            document.title = title;
+            document.querySelector('meta[name="description"]').setAttribute('content', description);
+            document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+            document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+            document.querySelector('meta[property="og:image"]').setAttribute('content', image);
+            document.querySelector('meta[property="og:url"]').setAttribute('content', url);
+            document.querySelector('meta[property="og:type"]').setAttribute('content', 'article');
+            document.querySelector('link[rel="canonical"]').setAttribute('href', url);
+
+            if (robots) robots.setAttribute('content', 'index, follow');
+
+            // JSON-LD (Schema.org NewsArticle)
+            const oldLd = document.querySelector('script[type="application/ld+json"]');
+            if (oldLd) oldLd.remove();
+
+            const jsonLd = {
+                "@context": "https://schema.org",
+                "@type": "NewsArticle",
+                "headline": article.title,
+                "description": article.summary || article.title,
+                "image": image,
+                "datePublished": published,
+                "dateModified": published,
+                "author": {
+                    "@type": "Person",
+                    "name": article.author_name || "Rédaction"
+                },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "BUZZ PLUS 225",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://buzzplus225.github.io/logo.png"
+                    }
+                },
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": url
+                }
+            };
+            const script = document.createElement('script');
+            script.type = 'application/ld+json';
+            script.textContent = JSON.stringify(jsonLd);
+            document.head.appendChild(script);
+        }
+
+        // ================================================================
+        // RENDER FUNCTIONS
         // ================================================================
 
         // Header
@@ -552,7 +639,6 @@
             // Desktop nav
             const nav = document.getElementById('desktopNav');
             if (nav) {
-                // Ne reconstruire que si nécessaire (on compare avec une data-attribute)
                 if (nav.dataset.currentCat !== currentCat) {
                     nav.dataset.currentCat = currentCat;
                     nav.innerHTML = CATEGORIES.slice(0, 7).map(cat =>
@@ -696,28 +782,20 @@
             }
             empty.classList.add('hidden');
             container.innerHTML = results.map(a =>
-                `<button class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3" data-slug="${a.slug}">
+                `<a href="/article/${a.slug}" class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 block">
                     <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-12 h-9 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'">
                     <div class="min-w-0"><p class="text-sm font-medium text-gray-900 dark:text-white truncate">${a.title}</p>
                     <span class="text-xs ${getCatTextClass(a.category)}">${a.category}</span></div>
-                </button>`
+                </a>`
             ).join('');
-            container.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('searchDropdown').classList.remove('open');
-                    document.getElementById('searchInput').value = '';
-                    state.searchQuery = '';
-                    renderSearchResults('');
-                    navigateToArticleBySlug(btn.dataset.slug);
-                });
-            });
+            // Les liens sont déjà cliquables, pas besoin d'ajouter d'événement supplémentaire
+            // Mais on ferme le dropdown après le clic (géré par le navigateur)
         }
 
         // Category pills
         function renderCategoryPills(active) {
             const container = document.getElementById('categoryPills');
             if (!container) return;
-            // Ne reconstruire que si nécessaire
             if (container.dataset.active === active) return;
             container.dataset.active = active;
             container.innerHTML = CATEGORIES.map(cat =>
@@ -734,7 +812,7 @@
             });
         }
 
-        // Articles grid
+        // Articles grid - maintenant avec des <a>
         function renderArticles() {
             const grid = document.getElementById('articlesGrid');
             const count = document.getElementById('articleCount');
@@ -758,74 +836,82 @@
                 const saved = readLater.includes(a.id);
                 const catClass = getCatClass(a.category);
                 const isNew = isNewArticle(a.published_at);
+                const link = `/article/${a.slug}`;
                 if (isGrid) {
-                    return `<div class="bg-white dark:bg-[#1a2d47] rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col" data-slug="${a.slug}">
-                        <div class="relative h-48 overflow-hidden">
-                            <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div class="absolute top-3 left-3 flex gap-1.5">
-                                <span class="category-badge ${catClass}">${a.category}</span>
-                                ${a.is_breaking ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}
+                    return `<a href="${link}" class="article-link group">
+                        <div class="article-card bg-white dark:bg-[#1a2d47] rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="absolute top-3 left-3 flex gap-1.5">
+                                    <span class="category-badge ${catClass}">${a.category}</span>
+                                    ${a.is_breaking ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}
+                                </div>
+                                ${isNew ? '<span class="absolute top-3 right-3 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
+                                <div class="absolute bottom-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button class="fav-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
+                                    <button class="save-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+                                    <button class="share-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
+                                </div>
                             </div>
-                            ${isNew ? '<span class="absolute top-3 right-3 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
-                            <div class="absolute bottom-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button class="fav-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
-                                <button class="save-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#4b5563'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
-                                <button class="share-btn p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
+                            <div class="p-4 flex-1 flex flex-col">
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#f5c518] transition-colors line-clamp-2 mb-2">${a.title}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1">${a.summary || ''}</p>
+                                <div class="flex items-center justify-between text-gray-400 text-xs pt-3 border-t border-gray-100 dark:border-gray-700">
+                                    <div class="flex items-center gap-3">
+                                        <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(a.published_at)}</span>
+                                        <span>${a.read_time || 3} min</span>
+                                    </div>
+                                    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="p-4 flex-1 flex flex-col">
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug hover:text-[#f5c518] transition-colors line-clamp-2 mb-2">${a.title}</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-1">${a.summary || ''}</p>
-                            <div class="flex items-center justify-between text-gray-400 text-xs pt-3 border-t border-gray-100 dark:border-gray-700">
-                                <div class="flex items-center gap-3">
+                    </a>`;
+                } else {
+                    return `<a href="${link}" class="article-link group">
+                        <div class="article-card flex gap-4 p-4 bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-all duration-300">
+                            <div class="relative w-40 h-28 shrink-0 overflow-hidden rounded-lg">
+                                <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'">
+                                ${isNew ? '<span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white ${catClass} mb-1.5">${a.category}</span>
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#f5c518] transition-colors line-clamp-2 mb-1">${a.title}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">${a.summary || ''}</p>
+                                <div class="flex items-center gap-3 text-gray-400 text-xs">
                                     <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(a.published_at)}</span>
+                                    <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
                                     <span>${a.read_time || 3} min</span>
                                 </div>
-                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
+                            </div>
+                            <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button class="fav-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
+                                <button class="save-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+                                <button class="share-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
                             </div>
                         </div>
-                    </div>`;
-                } else {
-                    return `<div class="group flex gap-4 p-4 bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-all duration-300 cursor-pointer" data-slug="${a.slug}">
-                        <div class="relative w-40 h-28 shrink-0 overflow-hidden rounded-lg">
-                            <img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&q=80'">
-                            ${isNew ? '<span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white ${catClass} mb-1.5">${a.category}</span>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#f5c518] transition-colors line-clamp-2 mb-1">${a.title}</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">${a.summary || ''}</p>
-                            <div class="flex items-center gap-3 text-gray-400 text-xs">
-                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${formatDate(a.published_at)}</span>
-                                <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span>
-                                <span>${a.read_time || 3} min</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button class="fav-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Ajouter aux favoris"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${liked ? '#ef4444' : 'none'}" stroke="${liked ? '#ef4444' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></button>
-                            <button class="save-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Sauvegarder pour plus tard"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${saved ? '#f5c518' : 'none'}" stroke="${saved ? '#f5c518' : '#9ca3af'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
-                            <button class="share-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700" data-id="${a.id}" aria-label="Partager"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg></button>
-                        </div>
-                    </div>`;
+                    </a>`;
                 }
             }).join('');
 
-            grid.querySelectorAll('[data-slug]').forEach(el => {
-                if (!el.classList.contains('fav-btn') && !el.classList.contains('save-btn') && !el.classList.contains('share-btn')) {
-                    el.addEventListener('click', () => {
-                        if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug);
-                    });
-                }
-            });
+            // Les événements pour les favoris, sauvegarde et partage restent sur les boutons
             grid.querySelectorAll('.fav-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(btn.dataset.id); renderArticles(); });
+                btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(btn.dataset.id); renderArticles(); });
             });
             grid.querySelectorAll('.save-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => { e.stopPropagation(); toggleReadLater(btn.dataset.id); renderArticles(); });
+                btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleReadLater(btn.dataset.id); renderArticles(); });
             });
             grid.querySelectorAll('.share-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => { e.stopPropagation(); shareArticle(btn.dataset.id); });
+                btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); shareArticle(btn.dataset.id); });
+            });
+
+            // Gestion du clic sur le lien : on utilise la navigation SPA (mais le href est déjà là)
+            grid.querySelectorAll('.article-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const slug = link.getAttribute('href').split('/').pop();
+                    if (slug) navigateToArticleBySlug(slug);
+                });
             });
         }
 
@@ -839,11 +925,11 @@
             <div class="space-y-6">
                 <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5">
                     <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><h3 class="font-bold text-gray-900 dark:text-white">Les plus lus</h3></div>
-                    <div class="space-y-3">${popular.map((a,i) => `<div class="group flex gap-3 cursor-pointer sidebar-article" data-slug="${a.slug}"><span class="text-2xl font-black text-gray-200 dark:text-gray-700 shrink-0 w-6">${i+1}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="flex items-center gap-1 text-xs text-gray-400 mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></div>`).join('')}</div>
+                    <div class="space-y-3">${popular.map((a,i) => `<a href="/article/${a.slug}" class="group flex gap-3 cursor-pointer sidebar-article"><span class="text-2xl font-black text-gray-200 dark:text-gray-700 shrink-0 w-6">${i+1}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="flex items-center gap-1 text-xs text-gray-400 mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></a>`).join('')}</div>
                 </div>
                 <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 p-5">
                     <div class="flex items-center gap-2 mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><h3 class="font-bold text-gray-900 dark:text-white">Dernières actualités</h3></div>
-                    <div class="space-y-3">${recent.map(a => `<div class="group flex gap-3 cursor-pointer sidebar-article" data-slug="${a.slug}"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-16 h-12 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="text-xs text-gray-400">${formatDate(a.published_at)}</span></div></div>`).join('')}</div>
+                    <div class="space-y-3">${recent.map(a => `<a href="/article/${a.slug}" class="group flex gap-3 cursor-pointer sidebar-article"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-16 h-12 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</p><span class="text-xs text-gray-400">${formatDate(a.published_at)}</span></div></a>`).join('')}</div>
                 </div>
                 <div class="bg-[#0a1628] rounded-xl p-5 text-white">
                     <div class="flex items-center gap-2 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><h3 class="font-bold">Newsletter</h3></div>
@@ -856,7 +942,11 @@
                 </div>
                 <div class="bg-gray-100 dark:bg-[#1a2d47] rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 flex items-center justify-center h-[250px]"><div class="text-center"><p class="text-gray-400 text-sm font-medium">Publicité</p><p class="text-gray-300 text-xs mt-1">300 x 250</p></div></div>
             </div>`;
-            container.querySelectorAll('.sidebar-article').forEach(el => el.addEventListener('click', () => { if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug); }));
+            container.querySelectorAll('.sidebar-article').forEach(el => el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const slug = el.getAttribute('href').split('/').pop();
+                if (slug) navigateToArticleBySlug(slug);
+            }));
             const nForm = document.getElementById('newsletterForm');
             if (nForm) {
                 nForm.addEventListener('submit', async (e) => {
@@ -883,7 +973,7 @@
             const main = featured[0];
             const subs = featured.slice(1, 3);
             container.innerHTML = `
-            <div class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl hero-main" data-slug="${main.slug}">
+            <a href="/article/${main.slug}" class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-2xl hero-main block">
                 <div class="relative h-80 lg:h-[420px]"><img src="${main.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'}" alt="${main.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div></div>
                 <div class="absolute bottom-0 left-0 right-0 p-6">
                     <div class="flex items-center gap-2 mb-3"><span class="category-badge ${getCatClass(main.category)}">${main.category}</span>${main.is_breaking ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}${isNewArticle(main.published_at) ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-green-500">NOUVEAU</span>' : ''}</div>
@@ -895,9 +985,9 @@
                         <span class="flex items-center gap-1 text-[#f5c518] font-medium group-hover:translate-x-1 transition-transform">Lire l'article <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
                     </div>
                 </div>
-            </div>
-            <div class="flex flex-col gap-4">${subs.map(a => `<div class="relative group cursor-pointer overflow-hidden rounded-xl flex-1 hero-sub" data-slug="${a.slug}"><div class="relative h-44 lg:h-full min-h-[160px]"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div></div><div class="absolute bottom-0 left-0 right-0 p-4"><span class="category-badge ${getCatClass(a.category)} inline-block mb-2">${a.category}</span><h3 class="text-base font-bold text-white leading-tight group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</h3><div class="flex items-center gap-3 text-gray-300 text-[10px] mt-2"><span>${formatDate(a.published_at)}</span><span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></div></div>`).join('')}</div>`;
-            container.querySelectorAll('.hero-main, .hero-sub').forEach(el => el.addEventListener('click', () => { if (el.dataset.slug) navigateToArticleBySlug(el.dataset.slug); }));
+            </a>
+            <div class="flex flex-col gap-4">${subs.map(a => `<a href="/article/${a.slug}" class="relative group cursor-pointer overflow-hidden rounded-xl flex-1 hero-sub block"><div class="relative h-44 lg:h-full min-h-[160px]"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'}" alt="${a.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80'"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div></div><div class="absolute bottom-0 left-0 right-0 p-4"><span class="category-badge ${getCatClass(a.category)} inline-block mb-2">${a.category}</span><h3 class="text-base font-bold text-white leading-tight group-hover:text-[#f5c518] transition-colors line-clamp-2">${a.title}</h3><div class="flex items-center gap-3 text-gray-300 text-[10px] mt-2"><span>${formatDate(a.published_at)}</span><span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg> ${(a.views || 0).toLocaleString('fr-FR')}</span></div></div></a>`).join('')}</div>`;
+            // Pas besoin d'ajouter des écouteurs car ce sont des liens
         }
 
         // Breaking Bar
@@ -908,9 +998,8 @@
             const breaking = state.articles.filter(a => a.is_breaking).slice(0, 3);
             if (breaking.length === 0) { bar.classList.add('hidden'); return; }
             bar.classList.remove('hidden');
-            const items = breaking.map(a => `<button class="text-sm hover:underline mx-4 breaking-item" data-slug="${a.slug}">${a.title}</button>`).join('');
+            const items = breaking.map(a => `<a href="/article/${a.slug}" class="text-sm hover:underline mx-4 breaking-item">${a.title}</a>`).join('');
             ticker.innerHTML = items + items;
-            ticker.querySelectorAll('.breaking-item').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.slug) navigateToArticleBySlug(btn.dataset.slug); }));
         }
 
         // Article Detail
@@ -920,7 +1009,11 @@
             container.innerHTML = `<div class="space-y-4"><div class="h-8 skeleton rounded w-1/4"></div><div class="h-96 skeleton rounded-2xl"></div><div class="space-y-3"><div class="h-4 skeleton rounded w-full"></div><div class="h-4 skeleton rounded w-5/6"></div></div></div>`;
             try {
                 const article = await fetchArticleBySlug(slug);
-                if (!article) { container.innerHTML = `<div class="text-center py-12"><h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Article non trouvé</h1><button onclick="navigate('home')" class="text-[#f5c518] hover:underline">Retour à l'accueil</button></div>`; return; }
+                if (!article) {
+                    container.innerHTML = `<div class="text-center py-12"><h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Article non trouvé</h1><a href="/" class="text-[#f5c518] hover:underline">Retour à l'accueil</a></div>`;
+                    updateMetaTags(null, true);
+                    return;
+                }
                 state.currentArticleId = article.id;
                 const comments = await fetchComments(article.id);
                 const favs = getFavorites();
@@ -928,8 +1021,11 @@
                 const liked = favs.includes(article.id);
                 const saved = readLater.includes(article.id);
 
+                // Mise à jour des meta tags
+                updateMetaTags(article, false);
+
                 container.innerHTML = `
-                <button onclick="navigate('home')" class="flex items-center gap-1 text-sm text-gray-500 hover:text-[#f5c518] transition-colors mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Retour à l'accueil</button>
+                <a href="/" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#f5c518] transition-colors mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Retour à l'accueil</a>
                 <div class="flex items-center gap-2 mb-4"><span class="category-badge ${getCatClass(article.category)}">${article.category}</span>${article.is_breaking ? '<span class="px-3 py-1 rounded-full text-xs font-bold text-white bg-red-500 animate-pulse">BREAKING</span>' : ''}</div>
                 <h1 class="text-3xl lg:text-4xl font-black text-gray-900 dark:text-white leading-tight mb-4">${article.title}</h1>
                 <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
@@ -996,7 +1092,8 @@
                 }
                 document.querySelector('.reading-progress-bar').style.width = '0%';
             } catch (err) {
-                container.innerHTML = `<div class="text-center py-12"><p class="text-red-500">Erreur de chargement : ${err.message}</p><button onclick="navigate('home')" class="text-[#f5c518] hover:underline">Retour à l'accueil</button></div>`;
+                container.innerHTML = `<div class="text-center py-12"><p class="text-red-500">Erreur de chargement : ${err.message}</p><a href="/" class="text-[#f5c518] hover:underline">Retour à l'accueil</a></div>`;
+                updateMetaTags(null, true);
             }
         }
 
@@ -1063,6 +1160,19 @@
                 renderBreakingBar();
                 renderArticles();
                 renderSidebar();
+                // Restaurer les meta pour la page d'accueil
+                document.title = 'BUZZ PLUS 225 - L\'info qui buzz';
+                document.querySelector('meta[name="description"]').setAttribute('content', 'Média numérique premium couvrant l\'actualité ivoirienne, africaine et internationale.');
+                document.querySelector('meta[property="og:title"]').setAttribute('content', 'BUZZ PLUS 225');
+                document.querySelector('meta[property="og:description"]').setAttribute('content', 'L\'info qui buzz, l\'actualité qui connecte');
+                document.querySelector('meta[property="og:image"]').setAttribute('content', 'https://buzzplus225.github.io/og-image.jpg');
+                document.querySelector('meta[property="og:url"]').setAttribute('content', 'https://buzzplus225.github.io/');
+                document.querySelector('meta[property="og:type"]').setAttribute('content', 'website');
+                document.querySelector('link[rel="canonical"]').setAttribute('href', 'https://buzzplus225.github.io/');
+                document.getElementById('robotsMeta')?.setAttribute('content', 'index, follow');
+                // Supprimer l'ancien JSON-LD
+                const oldLd = document.querySelector('script[type="application/ld+json"]');
+                if (oldLd) oldLd.remove();
                 history.pushState(null, '', '/');
             } else if (page === 'article') {
                 document.getElementById('page-article').classList.add('active');
@@ -1089,7 +1199,6 @@
             if (!container) return;
             const user = await checkAdminSession();
             if (!user) {
-                // Afficher le formulaire de connexion
                 container.innerHTML = `
                 <div class="admin-login">
                     <div class="bg-white dark:bg-[#1a2d47] rounded-2xl shadow-xl p-8 w-full max-w-sm border border-gray-100 dark:border-gray-800">
@@ -1101,7 +1210,7 @@
                             <input type="password" id="adminPassword" placeholder="Mot de passe" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0a1628] border border-gray-200 dark:border-gray-700 text-sm focus:ring-2 focus:ring-[#f5c518] outline-none text-gray-900 dark:text-white" required>
                             <button type="submit" id="adminLoginBtn" class="w-full py-3 bg-[#0a1628] text-white rounded-xl font-bold hover:bg-[#1a2d47] transition-colors dark:bg-white dark:text-[#0a1628] dark:hover:bg-gray-200 flex items-center justify-center gap-2">Se connecter</button>
                         </form>
-                        <button onclick="navigate('home')" class="w-full mt-3 py-2 text-sm text-gray-500 hover:text-[#f5c518] transition-colors">Retour au site</button>
+                        <a href="/" class="w-full mt-3 py-2 text-sm text-center block text-gray-500 hover:text-[#f5c518] transition-colors">Retour au site</a>
                         <div id="adminLoginError" class="mt-2 text-sm text-red-500 hidden"></div>
                     </div>
                 </div>`;
@@ -1232,12 +1341,11 @@
                     <table class="w-full">
                         <thead class="bg-gray-50 dark:bg-[#0a1628]"><tr><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Titre</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Slug</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Catégorie</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Vues</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Date</th><th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400">Actions</th></tr></thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800" id="adminTableBody">
-                            ${state.articles.map(a => `<tr><td class="px-4 py-3"><div class="flex items-center gap-3"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-10 h-8 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs">${a.title}</span>${a.is_featured ? '<span class="px-1.5 py-0.5 bg-[#f5c518]/20 text-[#f5c518] text-[10px] rounded font-bold">UNE</span>' : ''}${a.is_breaking ? '<span class="px-1.5 py-0.5 bg-red-500/20 text-red-500 text-[10px] rounded font-bold">BREAKING</span>' : ''}</div></td><td class="px-4 py-3 text-sm font-mono text-gray-500 dark:text-gray-400">${a.slug || '—'}</td><td class="px-4 py-3"><span class="category-badge ${getCatClass(a.category)}">${a.category}</span></td><td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${(a.views || 0).toLocaleString('fr-FR')}</td><td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">${new Date(a.published_at).toLocaleDateString('fr-FR')}</td><td class="px-4 py-3"><div class="flex items-center gap-1"><button class="admin-view-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400" data-slug="${a.slug}" aria-label="Voir l'article"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button><button class="admin-delete-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-400" data-id="${a.id}" aria-label="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button></div></td></tr>`).join('')}
+                            ${state.articles.map(a => `<tr><td class="px-4 py-3"><div class="flex items-center gap-3"><img src="${a.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'}" alt="" class="w-10 h-8 object-cover rounded shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=100&q=80'"><span class="text-sm font-medium text-gray-900 dark:text-white truncate max-w-xs">${a.title}</span>${a.is_featured ? '<span class="px-1.5 py-0.5 bg-[#f5c518]/20 text-[#f5c518] text-[10px] rounded font-bold">UNE</span>' : ''}${a.is_breaking ? '<span class="px-1.5 py-0.5 bg-red-500/20 text-red-500 text-[10px] rounded font-bold">BREAKING</span>' : ''}</div></td><td class="px-4 py-3 text-sm font-mono text-gray-500 dark:text-gray-400">${a.slug || '—'}</td><td class="px-4 py-3"><span class="category-badge ${getCatClass(a.category)}">${a.category}</span></td><td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">${(a.views || 0).toLocaleString('fr-FR')}</td><td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">${new Date(a.published_at).toLocaleDateString('fr-FR')}</td><td class="px-4 py-3"><div class="flex items-center gap-1"><a href="/article/${a.slug}" class="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400" aria-label="Voir l'article"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></a><button class="admin-delete-btn p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-400" data-id="${a.id}" aria-label="Supprimer"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button></div></td></tr>`).join('')}
                         </tbody>
                     </table>
                 </div>
             </div>`;
-            container.querySelectorAll('.admin-view-btn').forEach(btn => btn.addEventListener('click', () => { if (btn.dataset.slug) navigateToArticleBySlug(btn.dataset.slug); }));
             container.querySelectorAll('.admin-delete-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     if (!confirm('Supprimer cet article ?')) return;
@@ -1256,8 +1364,16 @@
             const container = document.getElementById('footerCategories');
             if (!container) return;
             const cats = CATEGORIES.filter(c => c !== 'Tous');
-            container.innerHTML = cats.map(c => `<li><button class="hover:text-[#f5c518] transition-colors footer-cat-btn" data-cat="${c}">${c}</button></li>`).join('');
-            container.querySelectorAll('.footer-cat-btn').forEach(btn => btn.addEventListener('click', () => { state.currentCategory = btn.dataset.cat; renderHeader('mainHeader', state.currentCategory); renderCategoryPills(state.currentCategory); renderArticles(); navigate('home'); }));
+            container.innerHTML = cats.map(c => `<li><a href="/?category=${encodeURIComponent(c)}" class="hover:text-[#f5c518] transition-colors footer-cat-link" data-cat="${c}">${c}</a></li>`).join('');
+            container.querySelectorAll('.footer-cat-link').forEach(link => link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const cat = link.dataset.cat;
+                state.currentCategory = cat;
+                renderHeader('mainHeader', state.currentCategory);
+                renderCategoryPills(state.currentCategory);
+                renderArticles();
+                navigate('home');
+            }));
             document.getElementById('footerYear').textContent = new Date().getFullYear();
         }
 
@@ -1297,9 +1413,6 @@
         // GENERATE SITEMAP (console log)
         // ================================================================
         function generateSitemap() {
-            // À exécuter manuellement ou lors du build.
-            // Ce code affiche le sitemap dans la console pour que vous puissiez le copier.
-            // Pensez à créer un fichier sitemap.xml à la racine.
             const baseUrl = 'https://buzzplus225.github.io';
             const today = new Date().toISOString().split('T')[0];
             let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>${baseUrl}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>`;
@@ -1310,10 +1423,6 @@
             });
             xml += '\n</urlset>';
             console.log('📄 Sitemap à copier dans sitemap.xml :\n', xml);
-            // Créez également un fichier robots.txt à la racine avec :
-            // User-agent: *
-            // Allow: /
-            // Sitemap: https://buzzplus225.github.io/sitemap.xml
             return xml;
         }
 
@@ -1371,7 +1480,7 @@
                 navigate('home');
             });
 
-            console.log('🚀 BUZZ PLUS 225 initialisé avec Supabase Auth et slugs !');
+            console.log('🚀 BUZZ PLUS 225 initialisé avec Supabase Auth, meta dynamiques et liens SEO !');
         }
 
         // Expose navigation globally for inline onclick
