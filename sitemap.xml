@@ -5,9 +5,15 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://buzzplus225.github.io/</loc>
-    <lastmod>2026-07-03</lastmod>
+    <lastmod>2026-07-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://buzzplus225.github.io/article/espagne-portugal-un-derby-iberique-explosif-au-mondial-2026</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/epidemie-debola-en-rdc-le-bilan-grimpe-a-plus-de-400-morts</loc>
