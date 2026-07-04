@@ -20,31 +20,48 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24' # Passage à Node 24 pour supprimer le warning de dépréciation
+          node-version: '24'
           
       - name: Install dependencies
         run: |
           if [ -f package.json ]; then
             npm ci || npm install
+          else
+            echo "⚠️ Pas de package.json à la racine ! Installation locale des modules requis..."
+            npm install @supabase/supabase-js dotenv
           fi
 
-      # Étape de débogage pour lister les fichiers et s'assurer que le dossier/fichier existe
-      - name: Vérifier la structure des fichiers
+      - name: Vérifier l'existence du script
         run: |
-          echo "=== Contenu de la racine ==="
-          ls -la
-          echo "=== Contenu du dossier scripts ==="
-          ls -la scripts || echo "Le dossier 'scripts' n'existe pas ou est mal nommé"
+          echo "=== Recherche du script sitemap ==="
+          find . -iname "generate-sitemap.js"
         
       - name: Generate sitemap
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: node scripts/generate-sitemap.js
+        # Utilisation de find pour exécuter le script peu importe la casse du dossier (scripts ou Scripts)
+        run: |
+          SCRIPT_PATH=$(find . -iname "generate-sitemap.js" | head -n 1)
+          if [ -z "$SCRIPT_PATH" ]; then
+            echo "❌ Erreur : Impossible de trouver le fichier generate-sitemap.js dans le projet."
+            exit 1
+          fi
+          echo "Exécution de : node $SCRIPT_PATH"
+          node "$SCRIPT_PATH"
         
       - name: Commit and push sitemap
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add sitemap.xml
+          
+          # On cherche où le sitemap.xml a été généré au cas où il ne serait pas à la racine
+          SITEMAP_PATH=$(find . -name "sitemap.xml" | head -n 1)
+          
+          if [ -z "$SITEMAP_PATH" ]; then
+            echo "❌ Aucun fichier sitemap.xml généré trouvé."
+            exit 1
+          fi
+          
+          git add "$SITEMAP_PATH"
           git diff --staged --quiet || (git commit -m "🔄 Mise à jour automatique du sitemap [skip ci]" && git push)
