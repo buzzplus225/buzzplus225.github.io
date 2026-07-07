@@ -5,9 +5,21 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://buzzplus225.github.io/</loc>
-    <lastmod>2026-07-04</lastmod>
+    <lastmod>2026-07-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://buzzplus225.github.io/article/coupe-du-monde-2026-le-portugal-de-cristiano-ronaldo-elimine-par-lespagne-une-legende-seteint</loc>
+    <lastmod>2026-07-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://buzzplus225.github.io/article/bac-2026-en-cote-divoire-les-filles-brillent-avec-4060-de-reussite</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/herve-renard-libre-un-successeur-ideal-pour-les-lions-du-senegal</loc>
