@@ -1,43 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://buzzplus225.github.io/</loc>
     <lastmod>2026-07-07</lastmod>
     <changefreq>daily</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/coupe-du-monde-2026-le-portugal-de-cristiano-ronaldo-elimine-par-lespagne-une-legende-seteint</loc>
     <lastmod>2026-07-07</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/liberation-provisoire-dibrahim-zigui-la-cour-dappel-dabidjan-suspend-sa-peine-de-5-ans</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/bac-2026-en-cote-divoire-les-filles-brillent-avec-4060-de-reussite</loc>
     <lastmod>2026-07-06</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/herve-renard-libre-un-successeur-ideal-pour-les-lions-du-senegal</loc>
     <lastmod>2026-07-04</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/espagne-portugal-un-derby-iberique-explosif-au-mondial-2026</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/epidemie-debola-en-rdc-le-bilan-grimpe-a-plus-de-400-morts</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://buzzplus225.github.io/article/coupe-du-monde-le-senegal-elimine-par-la-belgique-apres-un-scenario-cruel</loc>
     <lastmod>2026-07-02</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
