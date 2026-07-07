@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     
     permissions:
-      contents: write
+      contents: write # Essentiel pour permettre au bot de push le sitemap
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Permet de récupérer l'historique pour éviter des conflits de push bizarres
+          fetch-depth: 0 
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,7 +30,7 @@ jobs:
           if [ -f package.json ]; then
             npm ci || npm install
           else
-            echo "⚠️ Pas de package.json à la racine ! Installation locale des modules requis..."
+            echo "⚠️ Pas de package.json à la racine ! Installation des modules de secours..."
             npm install @supabase/supabase-js dotenv
           fi
 
@@ -38,9 +41,9 @@ jobs:
         
       - name: Generate sitemap
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        # Utilisation de find pour exécuter le script peu importe la casse du dossier (scripts ou Scripts)
+          # On passe le secret s'il existe, sinon une chaîne vide pour que le script Node prenne le relais
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || '' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || '' }}
         run: |
           SCRIPT_PATH=$(find . -iname "generate-sitemap.js" | head -n 1)
           if [ -z "$SCRIPT_PATH" ]; then
@@ -55,7 +58,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # On cherche où le sitemap.xml a été généré au cas où il ne serait pas à la racine
+          # Identification du sitemap généré
           SITEMAP_PATH=$(find . -name "sitemap.xml" | head -n 1)
           
           if [ -z "$SITEMAP_PATH" ]; then
@@ -63,5 +66,8 @@ jobs:
             exit 1
           fi
           
+          echo "Fichier sitemap trouvé ici : $SITEMAP_PATH"
           git add "$SITEMAP_PATH"
+          
+          # Le [skip ci] évite de déclencher une boucle infinie de builds
           git diff --staged --quiet || (git commit -m "🔄 Mise à jour automatique du sitemap [skip ci]" && git push)
