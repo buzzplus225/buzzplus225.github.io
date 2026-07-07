@@ -3,26 +3,39 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Balises par défaut (seront écrasées dynamiquement) -->
+    
+    <!-- ===== BALISES SEO STATIQUES ===== -->
     <title>BUZZ PLUS 225 - L'info qui buzz</title>
     <meta name="description" content="Média numérique premium couvrant l'actualité ivoirienne, africaine et internationale." />
-    <!-- Open Graph par défaut -->
-    <meta property="og:title" content="BUZZ PLUS 225" />
+    
+    <!-- ===== OPEN GRAPH (Facebook, LinkedIn, etc.) ===== -->
+    <meta property="og:title" content="BUZZ PLUS 225 - L'info qui buzz" />
     <meta property="og:description" content="L'info qui buzz, l'actualité qui connecte" />
-    <meta property="og:image" content="https://buzzplus225.github.io/og-image.jpg" />
+    <!-- Image par défaut (sera utilisée par les scrappers si aucune image dynamique n'est générée) -->
+    <meta property="og:image" content="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=630&fit=crop" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:url" content="https://buzzplus225.github.io/" />
     <meta property="og:type" content="website" />
+    
+    <!-- ===== TWITTER CARD ===== -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BUZZ PLUS 225" />
+    <meta name="twitter:description" content="L'info qui buzz, l'actualité qui connecte" />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=630&fit=crop" />
+    
+    <!-- ===== AUTRES ===== -->
     <link rel="canonical" href="https://buzzplus225.github.io/" />
-    <!-- Sitemap (lien vers un fichier généré statiquement) -->
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
-    <!-- Balise pour éviter l'indexation en cas d'erreur (gérée par JS) -->
     <meta name="robots" id="robotsMeta" content="index, follow" />
-
     <meta name="google-site-verification" content="ZhBAzX2KWa7_eI89HUvOSJaWyfIrDM_RPIBRDbPdUkE" />
+
+    <!-- ===== FONTS & STYLES ===== -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
         /* ===== STYLES EXISTANTS (conservés) ===== */
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -347,7 +360,6 @@
             'Football': 'category-text-football',
         };
 
-        // Liste des colonnes sélectionnées pour les articles
         const ARTICLE_SELECT = 'id,title,slug,summary,content,category,image_url,author_name,author_avatar,published_at,views,is_featured,is_breaking,tags,read_time';
 
         // ================================================================
@@ -367,7 +379,6 @@
             adminUser: null,
         };
 
-        // Cache des articles (5 minutes)
         let articlesCache = { data: null, timestamp: 0 };
         const CACHE_TTL = 300000; // 5 min
 
@@ -426,7 +437,6 @@
                 .replace(/\s+/g, '-')
                 .replace(/-+/g, '-')
                 .trim();
-            // Ajout d'un timestamp pour éviter les collisions
             return id ? `${base}-${id}` : `${base}-${Date.now()}`;
         }
 
@@ -442,7 +452,7 @@
         }
 
         // ================================================================
-        // SUPABASE HELPERS (version améliorée)
+        // SUPABASE HELPERS
         // ================================================================
         async function supabaseQuery(table, opts = {}) {
             const {
@@ -477,7 +487,6 @@
             const fetchOpts = { method, headers };
             if (body) fetchOpts.body = JSON.stringify(body);
             if (patchData) {
-                // PATCH nécessite une condition WHERE (eqCol/eqVal)
                 if (!eqCol || eqVal === undefined) throw new Error('patchData requires eqCol and eqVal');
                 const patchUrl = `${SUPABASE_URL}/rest/v1/${table}?${eqCol}=eq.${eqVal}`;
                 const resp = await fetch(patchUrl, {
@@ -523,10 +532,7 @@
                 });
                 if (!resp.ok) {
                     const err = await resp.json();
-                    // Détection du doublon pour la newsletter
-                    if (err.code === '23505') {
-                        throw new Error('DUPLICATE_EMAIL');
-                    }
+                    if (err.code === '23505') throw new Error('DUPLICATE_EMAIL');
                     throw new Error(JSON.stringify(err));
                 }
                 const json = await resp.json();
@@ -540,17 +546,12 @@
         }
 
         // ================================================================
-        // AUTH (avec rafraîchissement automatique)
+        // AUTH
         // ================================================================
         supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'TOKEN_REFRESHED') {
-                console.log('🔁 Token Supabase rafraîchi');
-            }
-            if (event === 'SIGNED_OUT') {
-                // Rediriger vers l'accueil si déconnecté
-                if (state.currentPage === 'admin') {
-                    navigate('home');
-                }
+            if (event === 'TOKEN_REFRESHED') console.log('🔁 Token Supabase rafraîchi');
+            if (event === 'SIGNED_OUT' && state.currentPage === 'admin') {
+                navigate('home');
                 showToast('Vous avez été déconnecté.', 'info');
             }
         });
@@ -590,12 +591,10 @@
         // FETCH ARTICLES avec cache
         // ================================================================
         async function fetchArticles(category = 'Tous', force = false) {
-            // Cache global (toutes catégories) : on stocke tous les articles
             if (!force && articlesCache.data && (Date.now() - articlesCache.timestamp < CACHE_TTL)) {
                 const filtered = category === 'Tous' ? articlesCache.data : articlesCache.data.filter(a => a.category === category);
                 return filtered;
             }
-            // Sinon on va chercher
             const opts = {
                 select: ARTICLE_SELECT,
                 order: 'published_at',
@@ -614,11 +613,9 @@
         }
 
         async function fetchArticleBySlug(slug) {
-            // On tente d'abord le cache
             if (articlesCache.data) {
                 const cached = articlesCache.data.find(a => a.slug === slug);
                 if (cached) {
-                    // On incrémente les vues en arrière-plan
                     incrementViews(cached.id);
                     return cached;
                 }
@@ -630,36 +627,31 @@
                 single: true
             });
             if (result.error) return null;
-            // Ajouter à la cache si possible
             if (articlesCache.data) {
                 const existing = articlesCache.data.findIndex(a => a.id === result.data.id);
                 if (existing === -1) articlesCache.data.push(result.data);
             }
-            // Incrémenter les vues
             incrementViews(result.data.id);
             return result.data;
         }
 
         async function incrementViews(articleId) {
+            let currentViews = 0;
+            if (articlesCache.data) {
+                const found = articlesCache.data.find(a => a.id === articleId);
+                if (found) currentViews = found.views || 0;
+            }
+            const newViews = currentViews + 1;
             try {
-                // On récupère l'article actuel pour avoir le nombre de vues actuel (de préférence depuis le cache)
-                let currentViews = 0;
-                if (articlesCache.data) {
-                    const found = articlesCache.data.find(a => a.id === articleId);
-                    if (found) currentViews = found.views || 0;
-                }
-                const newViews = currentViews + 1;
                 await supabaseQuery('articles', {
                     patchData: { views: newViews },
                     eqCol: 'id',
                     eqVal: articleId,
                 });
-                // Mettre à jour le cache
                 if (articlesCache.data) {
                     const idx = articlesCache.data.findIndex(a => a.id === articleId);
                     if (idx !== -1) articlesCache.data[idx].views = newViews;
                 }
-                // Mettre à jour dans l'état global
                 const stateIdx = state.articles.findIndex(a => a.id === articleId);
                 if (stateIdx !== -1) state.articles[stateIdx].views = newViews;
             } catch (e) {
@@ -677,12 +669,10 @@
                 limit: 100,
             });
             if (result.error) return [];
-            // Ne retourner que les commentaires approuvés
             return (result.data || []).filter(c => c.is_approved !== false);
         }
 
         async function postComment(articleId, authorName, content) {
-            // is_approved = false par défaut (modération)
             return supabaseInsert('comments', {
                 article_id: articleId,
                 author_name: authorName.trim(),
@@ -708,6 +698,8 @@
                 document.querySelector('meta[property="og:title"]').setAttribute('content', 'Article non trouvé');
                 document.querySelector('meta[property="og:description"]').setAttribute('content', 'Article introuvable.');
                 document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
+                document.querySelector('meta[name="twitter:title"]').setAttribute('content', 'Article non trouvé');
+                document.querySelector('meta[name="twitter:description"]').setAttribute('content', 'Article introuvable.');
                 document.querySelector('link[rel="canonical"]').setAttribute('href', window.location.href);
                 if (robots) robots.setAttribute('content', 'noindex, follow');
                 const oldLd = document.querySelector('script[type="application/ld+json"]');
@@ -717,21 +709,35 @@
 
             const title = `${article.title} - BUZZ PLUS 225`;
             const description = article.summary || article.title;
-            const image = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80';
+            const image = article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=630&fit=crop';
             const url = `${baseUrl}/article/${article.slug}`;
             const published = new Date(article.published_at).toISOString();
 
+            // Meta de base
             document.title = title;
             document.querySelector('meta[name="description"]').setAttribute('content', description);
+
+            // Open Graph
             document.querySelector('meta[property="og:title"]').setAttribute('content', title);
             document.querySelector('meta[property="og:description"]').setAttribute('content', description);
             document.querySelector('meta[property="og:image"]').setAttribute('content', image);
+            document.querySelector('meta[property="og:image:width"]')?.setAttribute('content', '1200');
+            document.querySelector('meta[property="og:image:height"]')?.setAttribute('content', '630');
             document.querySelector('meta[property="og:url"]').setAttribute('content', url);
             document.querySelector('meta[property="og:type"]').setAttribute('content', 'article');
+
+            // Twitter Card
+            document.querySelector('meta[name="twitter:card"]').setAttribute('content', 'summary_large_image');
+            document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
+            document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
+            document.querySelector('meta[name="twitter:image"]').setAttribute('content', image);
+
+            // Canonical
             document.querySelector('link[rel="canonical"]').setAttribute('href', url);
 
             if (robots) robots.setAttribute('content', 'index, follow');
 
+            // JSON-LD
             const oldLd = document.querySelector('script[type="application/ld+json"]');
             if (oldLd) oldLd.remove();
 
@@ -739,7 +745,7 @@
                 "@context": "https://schema.org",
                 "@type": "NewsArticle",
                 "headline": article.title,
-                "description": article.summary || article.title,
+                "description": description,
                 "image": image,
                 "datePublished": published,
                 "dateModified": published,
@@ -774,7 +780,6 @@
         function renderHeader(containerId, currentCat) {
             const container = document.getElementById(containerId) || document.querySelector('#mainHeader');
             if (!container) return;
-            // Desktop nav
             const nav = document.getElementById('desktopNav');
             if (nav) {
                 if (nav.dataset.currentCat !== currentCat) {
@@ -794,7 +799,6 @@
                     });
                 }
             }
-            // Mobile nav
             const mobileNav = document.getElementById('mobileNav');
             if (mobileNav && mobileNav.dataset.currentCat !== currentCat) {
                 mobileNav.dataset.currentCat = currentCat;
@@ -814,7 +818,6 @@
                 });
             }
 
-            // Logo
             const logoLink = document.getElementById('logoLink');
             if (logoLink) {
                 logoLink.addEventListener('click', (e) => {
@@ -865,7 +868,6 @@
                 });
             }
 
-            // Search
             const searchToggle = document.getElementById('searchToggle');
             const searchDropdown = document.getElementById('searchDropdown');
             const searchInput = document.getElementById('searchInput');
@@ -1030,7 +1032,6 @@
                 }
             }).join('');
 
-            // Événements pour favoris, sauvegarde, partage
             grid.querySelectorAll('.fav-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(btn.dataset.id); renderArticles(); });
             });
@@ -1069,7 +1070,6 @@
                 </div>
                 <div class="bg-gray-100 dark:bg-[#1a2d47] rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 flex items-center justify-center h-[250px]"><div class="text-center"><p class="text-gray-400 text-sm font-medium">Publicité</p><p class="text-gray-300 text-xs mt-1">300 x 250</p></div></div>
             </div>`;
-            // Les liens de la sidebar utilisent la délégation globale (voir plus bas)
             const nForm = document.getElementById('newsletterForm');
             if (nForm) {
                 nForm.addEventListener('submit', async (e) => {
@@ -1225,8 +1225,6 @@
                         } else {
                             showToast('Commentaire envoyé, en attente de modération.', 'success');
                             document.getElementById('commentText').value = '';
-                            // Recharger les commentaires pour afficher le nouveau (mais il sera masqué tant que non approuvé)
-                            // On peut afficher un message "En attente de validation" si on veut
                             renderArticleDetailBySlug(slug);
                         }
                     });
@@ -1304,11 +1302,15 @@
                 // SEO accueil
                 document.title = 'BUZZ PLUS 225 - L\'info qui buzz';
                 document.querySelector('meta[name="description"]').setAttribute('content', 'Média numérique premium couvrant l\'actualité ivoirienne, africaine et internationale.');
-                document.querySelector('meta[property="og:title"]').setAttribute('content', 'BUZZ PLUS 225');
+                document.querySelector('meta[property="og:title"]').setAttribute('content', 'BUZZ PLUS 225 - L\'info qui buzz');
                 document.querySelector('meta[property="og:description"]').setAttribute('content', 'L\'info qui buzz, l\'actualité qui connecte');
-                document.querySelector('meta[property="og:image"]').setAttribute('content', 'https://buzzplus225.github.io/og-image.jpg');
+                document.querySelector('meta[property="og:image"]').setAttribute('content', 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=630&fit=crop');
                 document.querySelector('meta[property="og:url"]').setAttribute('content', 'https://buzzplus225.github.io/');
                 document.querySelector('meta[property="og:type"]').setAttribute('content', 'website');
+                document.querySelector('meta[name="twitter:card"]').setAttribute('content', 'summary_large_image');
+                document.querySelector('meta[name="twitter:title"]').setAttribute('content', 'BUZZ PLUS 225');
+                document.querySelector('meta[name="twitter:description"]').setAttribute('content', 'L\'info qui buzz, l\'actualité qui connecte');
+                document.querySelector('meta[name="twitter:image"]').setAttribute('content', 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=630&fit=crop');
                 document.querySelector('link[rel="canonical"]').setAttribute('href', 'https://buzzplus225.github.io/');
                 document.getElementById('robotsMeta')?.setAttribute('content', 'index, follow');
                 const oldLd = document.querySelector('script[type="application/ld+json"]');
@@ -1377,7 +1379,6 @@
                 return;
             }
 
-            // Admin connecté
             container.innerHTML = `
             <div class="min-h-screen bg-[#f4f6f9] dark:bg-[#0a0a14]">
                 <div class="bg-[#0a1628] text-white"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><h1 class="text-lg font-bold">BUZZ PLUS 225 - Admin</h1><button id="adminLogout" class="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg hover:bg-white/20 transition-colors text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg> Déconnexion</button></div></div>
@@ -1447,7 +1448,6 @@
                     e.preventDefault();
                     const msg = document.getElementById('adminFormMsg');
                     const title = document.getElementById('aTitle').value.trim();
-                    // Génération du slug avec timestamp
                     const slug = generateSlug(title);
                     const data = {
                         title, slug,
@@ -1480,7 +1480,6 @@
                             msg.className = 'mt-4 text-green-500';
                             msg.classList.remove('hidden');
                             showToast('Article créé !', 'success');
-                            // Mettre à jour le cache et l'état
                             const newArticles = await fetchArticles('Tous', true);
                             state.articles = newArticles;
                             document.getElementById('adminArticleForm').reset();
@@ -1497,7 +1496,6 @@
                 return;
             }
             if (tab === 'comments') {
-                // Gestion des commentaires en attente de modération
                 const { data: pendingComments, error } = await supabaseQuery('comments', {
                     select: '*',
                     eqCol: 'is_approved',
@@ -1550,7 +1548,6 @@
                 });
                 return;
             }
-            // Liste des articles
             container.innerHTML = `
             <div class="bg-white dark:bg-[#1a2d47] rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <div class="overflow-x-auto">
@@ -1568,7 +1565,6 @@
                     try {
                         const result = await supabaseQuery('articles', { deleteId: btn.dataset.id });
                         if (result.error) { showToast('Erreur lors de la suppression', 'error'); } else { showToast('Article supprimé', 'success'); 
-                            // Recharger les articles
                             state.articles = await fetchArticles('Tous', true);
                             renderAdminTab('articles');
                         }
@@ -1614,7 +1610,7 @@
         }
 
         // ================================================================
-        // CONTROLS (VIEW / SORT)
+        // CONTROLS
         // ================================================================
         function initControls() {
             const gridBtn = document.getElementById('viewGrid');
@@ -1630,7 +1626,7 @@
         }
 
         // ================================================================
-        // GENERATE SITEMAP (console log)
+        // GENERATE SITEMAP
         // ================================================================
         function generateSitemap() {
             const baseUrl = 'https://buzzplus225.github.io';
@@ -1647,7 +1643,7 @@
         }
 
         // ================================================================
-        // POPSTATE (navigation arrière)
+        // POPSTATE
         // ================================================================
         window.addEventListener('popstate', () => {
             const path = window.location.pathname;
@@ -1663,14 +1659,12 @@
         // DÉLÉGATION D'ÉVÉNEMENTS POUR LES LIENS SPA
         // ================================================================
         document.addEventListener('click', (e) => {
-            // Clic sur les liens vers /article/...
             const link = e.target.closest('a[href^="/article/"]');
             if (link) {
                 e.preventDefault();
                 const slug = link.getAttribute('href').split('/').pop();
                 if (slug) navigateToArticleBySlug(slug);
             }
-            // Clic sur les liens de catégorie dans le footer déjà traités
         });
 
         // ================================================================
@@ -1681,7 +1675,6 @@
             initScrollListeners();
             renderFooterCategories();
 
-            // Chargement des articles (avec cache)
             state.articles = await fetchArticles('Tous');
 
             renderHeader('mainHeader', 'Tous');
@@ -1692,7 +1685,6 @@
             renderSidebar();
             initControls();
 
-            // Route initiale
             const path = window.location.pathname;
             if (path.startsWith('/article/')) {
                 const slug = path.split('/')[2];
@@ -1703,7 +1695,6 @@
                 navigate('home');
             }
 
-            // Génération du sitemap (dans la console)
             generateSitemap();
 
             document.getElementById('logoLink')?.addEventListener('click', (e) => {
@@ -1715,10 +1706,10 @@
                 navigate('home');
             });
 
-            console.log('🚀 BUZZ PLUS 225 initialisé avec toutes les corrections !');
+            console.log('🚀 BUZZ PLUS 225 initialisé avec toutes les corrections pour le partage social.');
+            console.warn('⚠️ ATTENTION : Les balises Open Graph sont dynamiques. Facebook ne les voit pas. Utilisez un pré-rendu ou une image OG statique de qualité.');
         }
 
-        // Expose navigation globally
         window.navigate = navigate;
         window.navigateToArticleBySlug = navigateToArticleBySlug;
 
