@@ -27,7 +27,6 @@ function generateSlug(title) {
 async function fetchArticles() {
     const url = `${SUPABASE_URL}/rest/v1/articles?select=id,slug,title,published_at&order=published_at.desc&limit=100`;
     
-    // Sécurité au cas où fetch global n'est pas dispo (Node < 18)
     if (typeof fetch === 'undefined') {
         throw new Error("L'API 'fetch' n'est pas disponible. Veuillez utiliser Node.js 18+ ou installer 'node-fetch'.");
     }
@@ -47,24 +46,21 @@ async function fetchArticles() {
 }
 
 /**
- * Génère la structure XML du sitemap
+ * Génère la structure XML du sitemap (Version Ultra-Compatible)
  */
 function generateSitemapXml(articles) {
     const today = new Date().toISOString().split('T')[0];
     
+    // Nettoyage de l'en-tête XML pour éviter les erreurs d'analyse strictes de Google
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">`;
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
 
-    // ✨ CORRECTION : Ajout de la page d'accueil obligatoire pour le SEO
+    // Page d'accueil obligatoire
     xml += `
   <url>
     <loc>${BASE_URL}/</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
   </url>`;
 
     articles.forEach(article => {
@@ -73,19 +69,19 @@ function generateSitemapXml(articles) {
             try {
                 date = new Date(article.published_at).toISOString().split('T')[0];
             } catch (e) {
-                // Reste sur la date du jour par défaut en cas de format invalide
+                // Reste sur la date du jour par défaut
             }
         }
 
-        // Utilise le slug existant ou le génère
         const slug = article.slug || generateSlug(article.title);
 
+        // Retrait de encodeURIComponent qui peut corrompre les tirets des slugs valides
+        // Retrait de la balise <priority> devenue obsolète pour Google
         xml += `
   <url>
-    <loc>${BASE_URL}/article/${encodeURIComponent(slug)}</loc>
+    <loc>${BASE_URL}/article/${slug}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>`;
     });
 
@@ -104,7 +100,6 @@ async function main() {
         
         const xml = generateSitemapXml(articles);
         
-        // S'assurer que le dossier parent existe avant d'écrire le fichier
         const dir = path.dirname(SITEMAP_PATH);
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir, { recursive: true });
