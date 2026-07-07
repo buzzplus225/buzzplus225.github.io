@@ -1,10 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
+// Tes clés d'origine sont conservées ici
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://dnxogdmnwjeszhsnluhf.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_uFIUz7GqohV9HAWZnwZEgA_ikt_YGFv';
 const BASE_URL = 'https://buzzplus225.github.io';
 const SITEMAP_PATH = path.join(__dirname, '..', 'sitemap.xml');
+
+/**
+ * Échappe les caractères spéciaux pour éviter de corrompre le XML (Sécurité Google)
+ */
+function escapeXml(unsafe) {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+}
 
 /**
  * Génère un slug propre à partir d'un titre
@@ -51,14 +68,13 @@ async function fetchArticles() {
 function generateSitemapXml(articles) {
     const today = new Date().toISOString().split('T')[0];
     
-    // Nettoyage de l'en-tête XML pour éviter les erreurs d'analyse strictes de Google
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
 
     // Page d'accueil obligatoire
     xml += `
   <url>
-    <loc>${BASE_URL}/</loc>
+    <loc>${escapeXml(BASE_URL)}/</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
   </url>`;
@@ -74,12 +90,12 @@ function generateSitemapXml(articles) {
         }
 
         const slug = article.slug || generateSlug(article.title);
+        const fullUrl = `${BASE_URL}/article/${slug}`;
 
-        // Retrait de encodeURIComponent qui peut corrompre les tirets des slugs valides
-        // Retrait de la balise <priority> devenue obsolète pour Google
+        // Sécurisation de la chaîne de l'URL pour le format XML
         xml += `
   <url>
-    <loc>${BASE_URL}/article/${slug}</loc>
+    <loc>${escapeXml(fullUrl)}</loc>
     <lastmod>${date}</lastmod>
     <changefreq>weekly</changefreq>
   </url>`;
